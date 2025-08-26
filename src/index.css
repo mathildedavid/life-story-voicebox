@@ -8,35 +8,52 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 13% 10%;
+    --foreground: 0 0% 96%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 13% 12%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 13% 12%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 1 83% 59%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 13% 18%;
+    --secondary-foreground: 0 0% 90%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 13% 16%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 142 76% 57%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 1 83% 59%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 22%;
+    --input: 220 13% 18%;
+    --ring: 1 83% 59%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
+
+    /* Recording specific colors */
+    --recording: 1 83% 59%;
+    --recording-glow: 1 83% 70%;
+    --success: 142 76% 57%;
+    --success-glow: 142 76% 70%;
+    --pause: 45 100% 60%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(1, 83%, 59%), hsl(1, 83%, 70%));
+    --gradient-card: linear-gradient(145deg, hsl(220, 13%, 12%), hsl(220, 13%, 14%));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(var(--recording) / 0.3), transparent);
+    
+    /* Shadows */
+    --shadow-recording: 0 0 30px hsl(var(--recording) / 0.4);
+    --shadow-card: 0 10px 30px -10px hsl(220, 13%, 8% / 0.3);
+    --shadow-glow: 0 0 60px hsl(var(--recording-glow) / 0.6);
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +117,43 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Recording UI Components */
+@layer components {
+  .recording-button {
+    @apply relative w-24 h-24 rounded-full border-2 border-primary bg-primary 
+           transition-all duration-300 ease-out hover:scale-105 active:scale-95
+           shadow-[0_0_30px_hsl(var(--recording)/0.4)];
+  }
+  
+  .recording-button.recording {
+    @apply animate-pulse shadow-[0_0_60px_hsl(var(--recording-glow)/0.6)];
+  }
+  
+  .recording-button.paused {
+    @apply bg-secondary border-secondary shadow-[0_0_30px_hsl(var(--pause)/0.4)];
+  }
+  
+  .control-button {
+    @apply w-12 h-12 rounded-full border border-muted bg-muted/20 backdrop-blur-sm
+           transition-all duration-200 ease-out hover:scale-110 active:scale-95
+           hover:bg-muted/40 hover:border-muted-foreground/30;
+  }
+  
+  .timer-display {
+    @apply font-mono text-4xl md:text-6xl font-light tracking-wider text-foreground
+           transition-all duration-300;
+  }
+  
+  .timer-display.recording {
+    @apply text-primary animate-pulse;
+  }
+  
+  .recording-card {
+    @apply bg-gradient-to-br from-card to-card/80 backdrop-blur-xl border border-border
+           rounded-3xl p-8 md:p-12 shadow-2xl;
   }
 }
