@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAudioRecording } from '@/hooks/useAudioRecording';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { RecordingsList } from '@/components/RecordingsList';
 import { 
   Play, 
   Pause, 
@@ -10,7 +11,8 @@ import {
   RotateCcw,
   Mic,
   MicOff,
-  Volume2
+  Volume2,
+  Save
 } from 'lucide-react';
 
 const formatTime = (seconds: number): string => {
@@ -30,7 +32,8 @@ export const RecordingStudio = () => {
     resumeRecording,
     stopRecording,
     resetRecording,
-    downloadRecording
+    downloadRecording,
+    saveToDatabase
   } = useAudioRecording();
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -141,6 +144,15 @@ export const RecordingStudio = () => {
                 </Button>
 
                 <Button
+                  onClick={saveToDatabase}
+                  variant="secondary"
+                  size="lg"
+                  className="control-button bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                >
+                  <Save className="w-5 h-5" />
+                </Button>
+
+                <Button
                   onClick={downloadRecording}
                   variant="secondary"
                   size="lg"
@@ -189,11 +201,29 @@ export const RecordingStudio = () => {
                 <li>• Share your memories, stories, and experiences</li>
                 <li>• Use pause/resume to take breaks</li>
                 <li>• Press stop when you're finished</li>
-                <li>• Download your recording to keep forever</li>
+                <li>• Save your recording to preserve it permanently</li>
+                <li>• Download recordings to your device anytime</li>
               </ul>
             </div>
           )}
+
+          {recordingState === 'completed' && recording && (
+            <div className="mt-8 p-6 bg-green-50/50 rounded-2xl">
+              <h3 className="text-lg font-medium mb-3 text-foreground">Your story is ready!</h3>
+              <p className="text-muted-foreground mb-4">
+                Duration: {formatTime(recording.duration)} • Size: {Math.round(recording.blob.size / 1024)} KB
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Click the save button to preserve this story permanently in your collection
+              </p>
+            </div>
+          )}
         </Card>
+
+        {/* Recordings History */}
+        <div className="mt-8">
+          <RecordingsList />
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { toast } from './use-toast';
+import { useRecordings } from './useRecordings';
 
 export type RecordingState = 'idle' | 'recording' | 'paused' | 'completed';
 
@@ -13,6 +14,7 @@ export const useAudioRecording = () => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [elapsedTime, setElapsedTime] = useState(0);
   const [recording, setRecording] = useState<AudioRecording | null>(null);
+  const { saveRecording } = useRecordings();
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -127,6 +129,12 @@ export const useAudioRecording = () => {
     }
   }, [recordingState, stopTimer]);
 
+  const saveToDatabase = useCallback(async () => {
+    if (recording) {
+      await saveRecording(recording.blob, recording.duration);
+    }
+  }, [recording, saveRecording]);
+
   const resetRecording = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -170,6 +178,7 @@ export const useAudioRecording = () => {
     resumeRecording,
     stopRecording,
     resetRecording,
-    downloadRecording
+    downloadRecording,
+    saveToDatabase
   };
 };
