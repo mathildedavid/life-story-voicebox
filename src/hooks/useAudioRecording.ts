@@ -23,11 +23,12 @@ export const useAudioRecording = () => {
   const pauseTimeRef = useRef<number>(0);
 
   const startTimer = useCallback(() => {
-    startTimeRef.current = Date.now() - elapsedTime * 1000;
+    startTimeRef.current = Date.now() - (pauseTimeRef.current * 1000);
     intervalRef.current = setInterval(() => {
-      setElapsedTime((Date.now() - startTimeRef.current) / 1000);
+      const currentTime = (Date.now() - startTimeRef.current) / 1000;
+      setElapsedTime(currentTime);
     }, 100);
-  }, [elapsedTime]);
+  }, []);
 
   const stopTimer = useCallback(() => {
     if (intervalRef.current) {
@@ -61,10 +62,22 @@ export const useAudioRecording = () => {
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
         const url = URL.createObjectURL(blob);
+        
+        // Use the elapsed time at the moment of stopping, not current elapsedTime
+        const recordingDuration = (Date.now() - startTimeRef.current) / 1000;
+        
+        console.log('Recording stopped - Debug info:', {
+          blobSize: blob.size,
+          calculatedDuration: recordingDuration,
+          elapsedTimeState: elapsedTime,
+          chunksCount: chunksRef.current.length,
+          startTime: startTimeRef.current
+        });
+        
         setRecording({
           blob,
           url,
-          duration: elapsedTime
+          duration: recordingDuration
         });
         setRecordingState('completed');
         stream.getTracks().forEach(track => track.stop());
@@ -95,14 +108,15 @@ export const useAudioRecording = () => {
       mediaRecorderRef.current.pause();
       setRecordingState('paused');
       stopTimer();
-      pauseTimeRef.current = elapsedTime;
+      // Store accumulated time when pausing
+      pauseTimeRef.current = (Date.now() - startTimeRef.current) / 1000;
       
       toast({
         title: "Recording paused",
         description: "Take your time..."
       });
     }
-  }, [recordingState, stopTimer, elapsedTime]);
+  }, [recordingState, stopTimer]);
 
   const resumeRecording = useCallback(() => {
     if (mediaRecorderRef.current && recordingState === 'paused') {
@@ -119,6 +133,10 @@ export const useAudioRecording = () => {
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && (recordingState === 'recording' || recordingState === 'paused')) {
+      // Capture final elapsed time before stopping
+      const finalElapsedTime = elapsedTime;
+      console.log('Stop recording called - elapsedTime:', finalElapsedTime);
+      
       mediaRecorderRef.current.stop();
       stopTimer();
       
@@ -127,7 +145,7 @@ export const useAudioRecording = () => {
         description: "Your story has been saved!"
       });
     }
-  }, [recordingState, stopTimer]);
+  }, [recordingState, stopTimer, elapsedTime]);
 
   const saveToDatabase = useCallback(async () => {
     if (recording) {

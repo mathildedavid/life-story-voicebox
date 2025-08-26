@@ -62,6 +62,12 @@ export const useRecordings = () => {
         return null;
       }
 
+      console.log('Saving recording - Debug info:', {
+        blobSize: audioBlob.size,
+        duration: duration,
+        blobType: audioBlob.type
+      });
+
       // Generate unique filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `${user.id}/${timestamp}.webm`;
@@ -84,16 +90,20 @@ export const useRecordings = () => {
         return null;
       }
 
+      const recordingData = {
+        user_id: user.id,
+        title: title || `Recording ${new Date().toLocaleDateString()}`,
+        duration: duration,
+        file_path: filename,
+        file_size: audioBlob.size
+      };
+
+      console.log('Inserting to database:', recordingData);
+
       // Save recording metadata to database
       const { data, error: dbError } = await supabase
         .from('recordings')
-        .insert({
-          user_id: user.id,
-          title: title || `Recording ${new Date().toLocaleDateString()}`,
-          duration: duration,
-          file_path: filename,
-          file_size: audioBlob.size
-        })
+        .insert(recordingData)
         .select()
         .single();
 
@@ -106,6 +116,8 @@ export const useRecordings = () => {
         });
         return null;
       }
+
+      console.log('Database save successful:', data);
 
       // Update local state
       setRecordings(prev => [data, ...prev]);

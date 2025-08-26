@@ -164,10 +164,8 @@ export const RecordingsList = ({ className }: RecordingsListProps) => {
                   </h4>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span>{formatDate(recording.created_at)}</span>
-                    <span>{formatTime(recording.duration)}</span>
-                    {recording.file_size && (
-                      <span>{Math.round(recording.file_size / 1024)} KB</span>
-                    )}
+                    <span>{recording.duration ? formatTime(recording.duration) : 'No duration'}</span>
+                    <span>{recording.file_size ? `${Math.round(recording.file_size / 1024)} KB` : 'No size'}</span>
                   </div>
                 </div>
 
