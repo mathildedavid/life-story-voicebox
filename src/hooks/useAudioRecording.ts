@@ -147,12 +147,6 @@ export const useAudioRecording = () => {
     }
   }, [recordingState, stopTimer, elapsedTime]);
 
-  const saveToDatabase = useCallback(async () => {
-    if (recording) {
-      await saveRecording(recording.blob, recording.duration);
-    }
-  }, [recording, saveRecording]);
-
   const resetRecording = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -170,6 +164,20 @@ export const useAudioRecording = () => {
     chunksRef.current = [];
     pauseTimeRef.current = 0;
   }, [recording]);
+
+  const saveToDatabase = useCallback(async () => {
+    if (recording) {
+      const result = await saveRecording(recording.blob, recording.duration);
+      if (result) {
+        // Successfully saved, now reset the recording state
+        resetRecording();
+        toast({
+          title: "Recording saved",
+          description: "Ready to record your next story!"
+        });
+      }
+    }
+  }, [recording, saveRecording, resetRecording]);
 
   const downloadRecording = useCallback(() => {
     if (recording) {

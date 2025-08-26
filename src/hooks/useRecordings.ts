@@ -122,11 +122,8 @@ export const useRecordings = () => {
       // Update local state
       setRecordings(prev => [data, ...prev]);
       
-      toast({
-        title: "Recording saved",
-        description: "Your life story has been preserved!"
-      });
-
+      // Don't show toast here since it will be shown in the hook
+      
       return data;
     } catch (error) {
       console.error('Error saving recording:', error);
