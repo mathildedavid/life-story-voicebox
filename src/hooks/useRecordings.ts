@@ -50,10 +50,19 @@ export const useRecordings = () => {
   };
 
   const saveRecording = async (audioBlob: Blob, duration: number, title?: string) => {
+    console.log('saveRecording function called with:', {
+      blobSize: audioBlob.size,
+      duration: duration,
+      blobType: audioBlob.type,
+      title: title
+    });
+
     try {
+      console.log('Getting user...');
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
+        console.log('No user found - showing auth error');
         toast({
           title: "Authentication required",
           description: "Please sign in to save recordings",
@@ -61,6 +70,8 @@ export const useRecordings = () => {
         });
         return null;
       }
+
+      console.log('User found:', user.id);
 
       console.log('Saving recording - Debug info:', {
         blobSize: audioBlob.size,

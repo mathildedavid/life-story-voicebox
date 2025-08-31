@@ -191,7 +191,17 @@ export const useAudioRecording = () => {
   }, [recording, recordingState]);
 
   const saveToDatabase = useCallback(async () => {
+    console.log('saveToDatabase called with state:', {
+      recordingState,
+      hasMediaRecorder: !!mediaRecorderRef.current,
+      chunksCount: chunksRef.current.length,
+      hasRecording: !!recording,
+      pauseTime: pauseTimeRef.current
+    });
+
     if (recordingState === 'paused' && mediaRecorderRef.current && chunksRef.current.length > 0) {
+      console.log('Processing paused state save...');
+      
       // For paused recordings, create the blob directly and save
       const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
       const finalDuration = pauseTimeRef.current;
@@ -204,7 +214,10 @@ export const useAudioRecording = () => {
       });
       
       try {
+        console.log('Calling saveRecording function...');
         const result = await saveRecording(blob, finalDuration);
+        console.log('saveRecording result:', result);
+        
         if (result) {
           console.log('Save successful, resetting...');
           
@@ -220,12 +233,15 @@ export const useAudioRecording = () => {
             title: "Recording saved",
             description: "Ready to record your next story!"
           });
+        } else {
+          console.error('saveRecording returned null/false');
         }
       } catch (error) {
-        console.error('Save failed:', error);
+        console.error('Save failed with error:', error);
       }
       
     } else if (recording) {
+      console.log('Processing completed state save...');
       const result = await saveRecording(recording.blob, recording.duration);
       if (result) {
         resetRecording();
@@ -234,6 +250,13 @@ export const useAudioRecording = () => {
           description: "Ready to record your next story!"
         });
       }
+    } else {
+      console.log('Cannot save - invalid state:', {
+        recordingState,
+        hasMediaRecorder: !!mediaRecorderRef.current,
+        chunksCount: chunksRef.current.length,
+        hasRecording: !!recording
+      });
     }
   }, [recordingState, recording, saveRecording, resetRecording]);
 
