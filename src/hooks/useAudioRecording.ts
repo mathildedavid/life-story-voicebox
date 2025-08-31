@@ -38,7 +38,10 @@ export const useAudioRecording = () => {
   }, []);
 
   const startRecording = useCallback(async () => {
+    console.log('startRecording called - current state:', recordingState);
+    
     try {
+      console.log('Requesting microphone access...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -46,6 +49,8 @@ export const useAudioRecording = () => {
           sampleRate: 44100
         } 
       });
+      
+      console.log('Microphone access granted, stream:', stream);
 
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
@@ -112,11 +117,11 @@ export const useAudioRecording = () => {
       console.error('Error starting recording:', error);
       toast({
         title: "Recording failed",
-        description: "Please check microphone permissions",
+        description: `Could not start recording: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive"
       });
     }
-  }, [elapsedTime, startTimer]);
+  }, [startTimer]);
 
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current && recordingState === 'recording') {
@@ -171,15 +176,28 @@ export const useAudioRecording = () => {
       intervalRef.current = null;
     }
     
-    // Stop media recorder if still active
+    // Stop and clear media recorder
     if (mediaRecorderRef.current) {
       try {
+        console.log('Stopping MediaRecorder, current state:', mediaRecorderRef.current.state);
+        
         if (mediaRecorderRef.current.state !== 'inactive') {
           mediaRecorderRef.current.stop();
         }
+        
+        // Stop all tracks from the stream
+        if (mediaRecorderRef.current.stream) {
+          console.log('Stopping stream tracks...');
+          mediaRecorderRef.current.stream.getTracks().forEach(track => {
+            console.log('Stopping track:', track.kind, track.readyState);
+            track.stop();
+          });
+        }
       } catch (error) {
-        console.log('MediaRecorder already stopped:', error);
+        console.log('MediaRecorder cleanup error (expected):', error);
       }
+      
+      // Clear the reference
       mediaRecorderRef.current = null;
     }
     
@@ -196,7 +214,7 @@ export const useAudioRecording = () => {
     pauseTimeRef.current = 0;
     startTimeRef.current = 0;
     
-    console.log('Recording reset complete');
+    console.log('Recording reset complete - new state: idle');
   }, [recording, recordingState]);
 
   const saveToDatabase = useCallback(async () => {
@@ -230,18 +248,14 @@ export const useAudioRecording = () => {
         if (result) {
           console.log('Save successful, resetting...');
           
-          // Stop any active streams
-          if (mediaRecorderRef.current?.stream) {
-            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-          }
-          
-          // Reset to idle state immediately
-          resetRecording();
-          
-          toast({
-            title: "Recording saved",
-            description: "Ready to record your next story!"
-          });
+          // Add a small delay to ensure MediaRecorder cleanup completes
+          setTimeout(() => {
+            resetRecording();
+            toast({
+              title: "Recording saved",
+              description: "Ready to record your next story!"
+            });
+          }, 100);
         } else {
           console.error('saveRecording returned null/false');
         }
