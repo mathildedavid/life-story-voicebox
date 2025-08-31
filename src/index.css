@@ -160,7 +160,7 @@ All colors MUST be HSL.
   /* Life Story Summary Styles */
   .life-story-card {
     @apply p-8 bg-gradient-to-br from-card via-card to-muted/20 border-2 border-border backdrop-blur-sm 
-           shadow-2xl rounded-3xl transition-all duration-300 hover:shadow-3xl;
+           shadow-2xl rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
   }
 
   .story-icon {
