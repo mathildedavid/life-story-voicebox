@@ -59,11 +59,17 @@ export const useAudioRecording = () => {
         }
       };
 
-      mediaRecorder.onstop = async () => {
+      mediaRecorder.onstop = () => {
+        // Only process onstop if we're not in the middle of a manual save
+        if (recordingState === 'paused') {
+          console.log('MediaRecorder onstop fired during paused save - ignoring');
+          return;
+        }
+        
         const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
         const url = URL.createObjectURL(blob);
         
-        // Use the elapsed time at the moment of stopping, not current elapsedTime
+        // Use the elapsed time at the moment of stopping
         const recordingDuration = (Date.now() - startTimeRef.current) / 1000;
         
         console.log('Recording stopped - Debug info:', {
@@ -71,8 +77,7 @@ export const useAudioRecording = () => {
           calculatedDuration: recordingDuration,
           elapsedTimeState: elapsedTime,
           chunksCount: chunksRef.current.length,
-          startTime: startTimeRef.current,
-          wasInPausedState: recordingState === 'paused'
+          startTime: startTimeRef.current
         });
         
         setRecording({
@@ -149,22 +154,41 @@ export const useAudioRecording = () => {
   }, [recordingState, stopTimer, elapsedTime]);
 
   const resetRecording = useCallback(() => {
+    console.log('Resetting recording - current state:', recordingState);
+    
+    // Clear timer first
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
+    
+    // Stop media recorder if still active
     if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
+      try {
+        if (mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } catch (error) {
+        console.log('MediaRecorder already stopped:', error);
+      }
+      mediaRecorderRef.current = null;
     }
+    
+    // Clean up recording URL
     if (recording?.url) {
       URL.revokeObjectURL(recording.url);
     }
     
+    // Reset all state in batch
     setRecordingState('idle');
     setElapsedTime(0);
     setRecording(null);
     chunksRef.current = [];
     pauseTimeRef.current = 0;
-  }, [recording]);
+    startTimeRef.current = 0;
+    
+    console.log('Recording reset complete');
+  }, [recording, recordingState]);
 
   const saveToDatabase = useCallback(async () => {
     if (recordingState === 'paused' && mediaRecorderRef.current && chunksRef.current.length > 0) {
@@ -175,20 +199,30 @@ export const useAudioRecording = () => {
       console.log('Saving from paused state - Debug info:', {
         blobSize: blob.size,
         duration: finalDuration,
-        chunksCount: chunksRef.current.length
+        chunksCount: chunksRef.current.length,
+        currentState: recordingState
       });
       
-      const result = await saveRecording(blob, finalDuration);
-      if (result) {
-        // Clean up media recorder and reset state
-        if (mediaRecorderRef.current) {
-          mediaRecorderRef.current.stop();
+      try {
+        const result = await saveRecording(blob, finalDuration);
+        if (result) {
+          console.log('Save successful, resetting...');
+          
+          // Stop any active streams
+          if (mediaRecorderRef.current?.stream) {
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+          }
+          
+          // Reset to idle state immediately
+          resetRecording();
+          
+          toast({
+            title: "Recording saved",
+            description: "Ready to record your next story!"
+          });
         }
-        resetRecording();
-        toast({
-          title: "Recording saved",
-          description: "Ready to record your next story!"
-        });
+      } catch (error) {
+        console.error('Save failed:', error);
       }
       
     } else if (recording) {
