@@ -130,10 +130,11 @@ export const useRecordings = () => {
 
       console.log('Database save successful:', data);
 
-      // Update local state
-      setRecordings(prev => [data, ...prev]);
-      
-      // Don't show toast here since it will be shown in the hook
+      // Update local state by adding the new recording to the beginning
+      setRecordings(prev => {
+        console.log('Updating recordings list, adding new recording:', data.id);
+        return [data, ...prev];
+      });
       
       return data;
     } catch (error) {
