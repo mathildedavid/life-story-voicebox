@@ -48,14 +48,21 @@ export const useAudioRecording = () => {
       });
 
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+          ? 'audio/webm;codecs=opus' 
+          : MediaRecorder.isTypeSupported('audio/webm') 
+          ? 'audio/webm' 
+          : 'audio/mp4'
       });
 
+      console.log('MediaRecorder created with mimeType:', mediaRecorder.mimeType);
       chunksRef.current = [];
       
       mediaRecorder.ondataavailable = (event) => {
+        console.log('Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           chunksRef.current.push(event.data);
+          console.log('Total chunks:', chunksRef.current.length);
         }
       };
 
@@ -90,7 +97,9 @@ export const useAudioRecording = () => {
       };
 
       mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(100); // Collect data every 100ms
+      console.log('Starting MediaRecorder...');
+      mediaRecorder.start(1000); // Collect data every 1 second instead of 100ms
+      console.log('MediaRecorder state:', mediaRecorder.state);
       setRecordingState('recording');
       startTimer();
       
