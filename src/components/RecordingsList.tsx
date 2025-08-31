@@ -25,10 +25,12 @@ const formatDate = (dateString: string): string => {
 
 interface RecordingsListProps {
   className?: string;
+  recordingsHook?: ReturnType<typeof useRecordings>;
 }
 
-export const RecordingsList = ({ className }: RecordingsListProps) => {
-  const { recordings, loading, deleteRecording, getRecordingUrl } = useRecordings();
+export const RecordingsList = ({ className, recordingsHook }: RecordingsListProps) => {
+  const defaultRecordings = useRecordings();
+  const { recordings, loading, deleteRecording, getRecordingUrl } = recordingsHook || defaultRecordings;
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Map<string, HTMLAudioElement>>(new Map());
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAudioRecording } from '@/hooks/useAudioRecording';
+import { useRecordings } from '@/hooks/useRecordings';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { RecordingsList } from '@/components/RecordingsList';
@@ -23,6 +24,7 @@ const formatTime = (seconds: number): string => {
 };
 
 export const RecordingStudio = () => {
+  const recordingsHook = useRecordings();
   const {
     recordingState,
     elapsedTime,
@@ -34,7 +36,7 @@ export const RecordingStudio = () => {
     resetRecording,
     downloadRecording,
     saveToDatabase
-  } = useAudioRecording();
+  } = useAudioRecording(recordingsHook);
 
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -180,7 +182,7 @@ export const RecordingStudio = () => {
 
         {/* Recordings History */}
         <div className="mt-8">
-          <RecordingsList />
+          <RecordingsList recordingsHook={recordingsHook} />
         </div>
       </div>
     </div>

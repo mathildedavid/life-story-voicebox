@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
 import { toast } from './use-toast';
-import { useRecordings } from './useRecordings';
 
 export type RecordingState = 'idle' | 'recording' | 'paused' | 'completed';
 
@@ -10,11 +9,11 @@ export interface AudioRecording {
   duration: number;
 }
 
-export const useAudioRecording = () => {
+export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./useRecordings').useRecordings>) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [elapsedTime, setElapsedTime] = useState(0);
   const [recording, setRecording] = useState<AudioRecording | null>(null);
-  const { saveRecording } = useRecordings();
+  const { saveRecording } = recordingsHook || {};
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
