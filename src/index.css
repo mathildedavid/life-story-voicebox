@@ -156,4 +156,54 @@ All colors MUST be HSL.
     @apply bg-gradient-to-br from-card to-card/80 backdrop-blur-xl border border-border
            rounded-3xl p-8 md:p-12 shadow-2xl;
   }
+
+  /* Life Story Summary Styles */
+  .life-story-card {
+    @apply p-8 bg-gradient-to-br from-card via-card to-muted/20 border-2 border-border backdrop-blur-sm 
+           shadow-2xl rounded-3xl transition-all duration-300 hover:shadow-3xl;
+  }
+
+  .story-icon {
+    @apply w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center 
+           text-primary-foreground shadow-lg transition-transform hover:scale-105;
+  }
+
+  .story-text {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .story-text.collapsed {
+    @apply max-h-20;
+  }
+
+  .story-text.collapsed::after {
+    @apply absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent content-[''] pointer-events-none;
+  }
+
+  .story-text.expanded {
+    @apply max-h-none;
+  }
+
+  .stat-item {
+    @apply flex flex-col items-center text-center p-4 rounded-2xl bg-gradient-to-b from-muted/30 to-muted/10 
+           border border-border/50 transition-all duration-200 hover:shadow-lg hover:scale-105 hover:bg-muted/40;
+  }
+
+  .stat-icon {
+    @apply w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-2 
+           transition-colors hover:bg-primary/20;
+  }
+
+  .stat-value {
+    @apply text-xl font-semibold text-foreground mb-1;
+  }
+
+  .stat-label {
+    @apply text-xs text-muted-foreground font-medium uppercase tracking-wider;
+  }
+
+  .timeline-section {
+    @apply bg-gradient-to-r from-muted/20 to-transparent p-4 rounded-xl border border-border/30 
+           backdrop-blur-sm;
+  }
 }

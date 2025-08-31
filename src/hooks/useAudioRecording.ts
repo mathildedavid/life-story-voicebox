@@ -250,6 +250,10 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
           // Add a small delay to ensure MediaRecorder cleanup completes
           setTimeout(() => {
             resetRecording();
+            
+            // Notify the LifeStorySummary to regenerate
+            window.dispatchEvent(new CustomEvent('recordingSaved'));
+            
             toast({
               title: "Recording saved",
               description: "Ready to record your next story!"
@@ -267,6 +271,10 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       const result = await saveRecording(recording.blob, recording.duration);
       if (result) {
         resetRecording();
+        
+        // Notify the LifeStorySummary to regenerate
+        window.dispatchEvent(new CustomEvent('recordingSaved'));
+        
         toast({
           title: "Recording saved",
           description: "Ready to record your next story!"

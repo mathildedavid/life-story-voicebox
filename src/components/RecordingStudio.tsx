@@ -4,6 +4,7 @@ import { useRecordings } from '@/hooks/useRecordings';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { RecordingsList } from '@/components/RecordingsList';
+import { LifeStorySummary } from '@/components/LifeStorySummary';
 import { 
   Play, 
   Pause, 
@@ -179,6 +180,9 @@ export const RecordingStudio = () => {
           )}
 
         </Card>
+
+        {/* Life Story Summary */}
+        <LifeStorySummary />
 
         {/* Recordings History */}
         <div className="mt-8">

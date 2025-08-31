@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      life_story_summaries: {
+        Row: {
+          created_at: string
+          id: string
+          last_recording_count: number
+          statistics: Json | null
+          summary_text: string
+          themes: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_recording_count?: number
+          statistics?: Json | null
+          summary_text: string
+          themes?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_recording_count?: number
+          statistics?: Json | null
+          summary_text?: string
+          themes?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       recordings: {
         Row: {
           created_at: string
