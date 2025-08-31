@@ -97,7 +97,6 @@ export const RecordingStudio = () => {
               {recordingState === 'idle' && "Ready to capture your memories"}
               {recordingState === 'recording' && "Recording your story..."}
               {recordingState === 'paused' && "Recording paused"}
-              {recordingState === 'completed' && "Story recorded successfully!"}
             </p>
           </div>
 
@@ -113,7 +112,6 @@ export const RecordingStudio = () => {
             <button
               onClick={handleMainButtonClick}
               className={getMainButtonClass()}
-              disabled={recordingState === 'completed'}
             >
               {getMainButtonIcon()}
             </button>
@@ -121,7 +119,7 @@ export const RecordingStudio = () => {
 
           {/* Control Buttons */}
           <div className="flex justify-center gap-4 mb-8">
-            {(recordingState === 'recording' || recordingState === 'paused') && (
+            {recordingState === 'recording' && (
               <Button
                 onClick={stopRecording}
                 variant="secondary"
@@ -132,44 +130,15 @@ export const RecordingStudio = () => {
               </Button>
             )}
 
-            {recordingState === 'completed' && (
-              <>
-                <Button
-                  onClick={handlePlayback}
-                  variant="secondary"
-                  size="lg"
-                  className="control-button"
-                >
-                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                </Button>
-
-                <Button
-                  onClick={saveToDatabase}
-                  variant="secondary"
-                  size="lg"
-                  className="control-button bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
-                >
-                  <Save className="w-5 h-5" />
-                </Button>
-
-                <Button
-                  onClick={downloadRecording}
-                  variant="secondary"
-                  size="lg"
-                  className="control-button"
-                >
-                  <Download className="w-5 h-5" />
-                </Button>
-
-                <Button
-                  onClick={resetRecording}
-                  variant="secondary"
-                  size="lg"
-                  className="control-button"
-                >
-                  <RotateCcw className="w-5 h-5" />
-                </Button>
-              </>
+            {recordingState === 'paused' && (
+              <Button
+                onClick={saveToDatabase}
+                variant="secondary"
+                size="lg"
+                className="control-button bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+              >
+                <Save className="w-5 h-5" />
+              </Button>
             )}
           </div>
 
@@ -207,17 +176,6 @@ export const RecordingStudio = () => {
             </div>
           )}
 
-          {recordingState === 'completed' && recording && (
-            <div className="mt-8 p-6 bg-green-50/50 rounded-2xl">
-              <h3 className="text-lg font-medium mb-3 text-foreground">Your story is ready!</h3>
-              <p className="text-muted-foreground mb-4">
-                Duration: {formatTime(recording.duration)} • Size: {Math.round(recording.blob.size / 1024)} KB
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Click the save button to preserve this story permanently in your collection
-              </p>
-            </div>
-          )}
         </Card>
 
         {/* Recordings History */}

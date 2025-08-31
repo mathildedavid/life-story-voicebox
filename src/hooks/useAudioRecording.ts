@@ -59,7 +59,7 @@ export const useAudioRecording = () => {
         }
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
         const url = URL.createObjectURL(blob);
         
@@ -73,6 +73,26 @@ export const useAudioRecording = () => {
           chunksCount: chunksRef.current.length,
           startTime: startTimeRef.current
         });
+        
+        // If we were in paused state and stopped for saving, save immediately
+        if (recordingState === 'paused') {
+          const result = await saveRecording(blob, recordingDuration);
+          if (result) {
+            // Successfully saved, reset everything
+            setRecordingState('idle');
+            setElapsedTime(0);
+            setRecording(null);
+            chunksRef.current = [];
+            pauseTimeRef.current = 0;
+            URL.revokeObjectURL(url);
+            stream.getTracks().forEach(track => track.stop());
+            toast({
+              title: "Recording saved",
+              description: "Ready to record your next story!"
+            });
+            return;
+          }
+        }
         
         setRecording({
           blob,
@@ -166,7 +186,13 @@ export const useAudioRecording = () => {
   }, [recording]);
 
   const saveToDatabase = useCallback(async () => {
-    if (recording) {
+    if (recordingState === 'paused' && mediaRecorderRef.current) {
+      // Stop the recording first to get the final blob
+      mediaRecorderRef.current.stop();
+      stopTimer();
+      
+      // The onstop event will handle saving
+    } else if (recording) {
       const result = await saveRecording(recording.blob, recording.duration);
       if (result) {
         // Successfully saved, now reset the recording state
@@ -177,7 +203,7 @@ export const useAudioRecording = () => {
         });
       }
     }
-  }, [recording, saveRecording, resetRecording]);
+  }, [recordingState, recording, saveRecording, resetRecording, stopTimer]);
 
   const downloadRecording = useCallback(() => {
     if (recording) {
