@@ -71,28 +71,9 @@ export const useAudioRecording = () => {
           calculatedDuration: recordingDuration,
           elapsedTimeState: elapsedTime,
           chunksCount: chunksRef.current.length,
-          startTime: startTimeRef.current
+          startTime: startTimeRef.current,
+          wasInPausedState: recordingState === 'paused'
         });
-        
-        // If we were in paused state and stopped for saving, save immediately
-        if (recordingState === 'paused') {
-          const result = await saveRecording(blob, recordingDuration);
-          if (result) {
-            // Successfully saved, reset everything
-            setRecordingState('idle');
-            setElapsedTime(0);
-            setRecording(null);
-            chunksRef.current = [];
-            pauseTimeRef.current = 0;
-            URL.revokeObjectURL(url);
-            stream.getTracks().forEach(track => track.stop());
-            toast({
-              title: "Recording saved",
-              description: "Ready to record your next story!"
-            });
-            return;
-          }
-        }
         
         setRecording({
           blob,
@@ -186,16 +167,33 @@ export const useAudioRecording = () => {
   }, [recording]);
 
   const saveToDatabase = useCallback(async () => {
-    if (recordingState === 'paused' && mediaRecorderRef.current) {
-      // Stop the recording first to get the final blob
-      mediaRecorderRef.current.stop();
-      stopTimer();
+    if (recordingState === 'paused' && mediaRecorderRef.current && chunksRef.current.length > 0) {
+      // For paused recordings, create the blob directly and save
+      const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
+      const finalDuration = pauseTimeRef.current;
       
-      // The onstop event will handle saving
+      console.log('Saving from paused state - Debug info:', {
+        blobSize: blob.size,
+        duration: finalDuration,
+        chunksCount: chunksRef.current.length
+      });
+      
+      const result = await saveRecording(blob, finalDuration);
+      if (result) {
+        // Clean up media recorder and reset state
+        if (mediaRecorderRef.current) {
+          mediaRecorderRef.current.stop();
+        }
+        resetRecording();
+        toast({
+          title: "Recording saved",
+          description: "Ready to record your next story!"
+        });
+      }
+      
     } else if (recording) {
       const result = await saveRecording(recording.blob, recording.duration);
       if (result) {
-        // Successfully saved, now reset the recording state
         resetRecording();
         toast({
           title: "Recording saved",
@@ -203,7 +201,7 @@ export const useAudioRecording = () => {
         });
       }
     }
-  }, [recordingState, recording, saveRecording, resetRecording, stopTimer]);
+  }, [recordingState, recording, saveRecording, resetRecording]);
 
   const downloadRecording = useCallback(() => {
     if (recording) {
