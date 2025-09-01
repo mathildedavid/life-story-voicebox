@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { Play, Pause, Download, Trash2, ChevronDown, ChevronRight, FileText, Loader2 } from 'lucide-react';
+import { Play, Pause, Download, Trash2, ChevronDown, ChevronRight, FileText, Loader2, Heart } from 'lucide-react';
 import { useRecordings, type Recording } from '@/hooks/useRecordings';
 
 const formatTime = (seconds: number): string => {
@@ -219,7 +219,7 @@ export const RecordingsList = ({ className, recordingsHook }: RecordingsListProp
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {recording.transcript && (
+                      {(recording.transcript || recording.encouragement_message) && (
                         <CollapsibleTrigger asChild>
                           <Button
                             variant="ghost"
@@ -265,15 +265,27 @@ export const RecordingsList = ({ className, recordingsHook }: RecordingsListProp
                     </div>
                   </div>
 
-                  {recording.transcript && (
+                  {(recording.transcript || recording.encouragement_message) && (
                     <CollapsibleContent className="px-4 pb-4">
-                      <div className="bg-muted/30 rounded-lg p-4 mt-2">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FileText className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium text-muted-foreground">Transcript</span>
+                      {recording.transcript && (
+                        <div className="bg-muted/30 rounded-lg p-4 mt-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FileText className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm font-medium text-muted-foreground">Transcript</span>
+                          </div>
+                          <p className="text-sm leading-relaxed">{recording.transcript}</p>
                         </div>
-                        <p className="text-sm leading-relaxed">{recording.transcript}</p>
-                      </div>
+                      )}
+                      
+                      {recording.encouragement_message && (
+                        <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg p-4 mt-2 border border-primary/20">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Heart className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-medium text-primary">Your Story Shines</span>
+                          </div>
+                          <p className="text-sm leading-relaxed text-foreground font-medium">{recording.encouragement_message}</p>
+                        </div>
+                      )}
                     </CollapsibleContent>
                   )}
                 </div>

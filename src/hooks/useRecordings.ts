@@ -9,6 +9,7 @@ export interface Recording {
   file_path: string;
   file_size: number | null;
   transcript: string | null;
+  encouragement_message: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -213,6 +214,11 @@ export const useRecordings = () => {
     try {
       console.log('Starting transcription for recording:', recordingId);
       
+      toast({
+        title: "Processing your story...",
+        description: "Transcribing your recording..."
+      });
+      
       const { data, error } = await supabase.functions.invoke('transcribe-audio', {
         body: { recordingId }
       });
@@ -238,13 +244,60 @@ export const useRecordings = () => {
         )
       );
 
-      toast({
-        title: "Transcription complete",
-        description: "Your recording has been transcribed"
-      });
+      // Now generate encouragement message
+      generateEncouragement(recordingId);
 
     } catch (error) {
       console.error('Error transcribing recording:', error);
+      toast({
+        title: "Processing failed",
+        description: "Could not process your recording",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const generateEncouragement = async (recordingId: string) => {
+    try {
+      console.log('Generating encouragement for recording:', recordingId);
+      
+      toast({
+        title: "Creating your personal message...",
+        description: "Analyzing your story for insights..."
+      });
+      
+      const { data, error } = await supabase.functions.invoke('generate-encouragement', {
+        body: { recordingId }
+      });
+
+      if (error) {
+        console.error('Error generating encouragement:', error);
+        // Don't show error toast here as it's not critical
+        return;
+      }
+
+      console.log('Encouragement generated:', data);
+      
+      // Update local state with encouragement message
+      setRecordings(prev => 
+        prev.map(recording => 
+          recording.id === recordingId 
+            ? { ...recording, encouragement_message: data.encouragementMessage }
+            : recording
+        )
+      );
+
+      // Show the encouraging message to the user
+      if (data.encouragementMessage) {
+        toast({
+          title: "Your story shines! ✨",
+          description: data.encouragementMessage,
+          duration: 8000, // Show for 8 seconds
+        });
+      }
+
+    } catch (error) {
+      console.error('Error generating encouragement:', error);
     }
   };
 
@@ -259,6 +312,7 @@ export const useRecordings = () => {
     deleteRecording,
     getRecordingUrl,
     transcribeRecording,
+    generateEncouragement,
     refetch: fetchRecordings
   };
 };
