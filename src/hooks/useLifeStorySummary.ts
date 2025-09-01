@@ -134,16 +134,16 @@ export const useLifeStorySummary = () => {
   useEffect(() => {
     fetchSummary();
     
-    // Listen for new recordings to regenerate summary
-    const handleRecordingSaved = () => {
-      console.log('Recording saved event received, regenerating summary...');
-      generateSummary();
+    // Listen for completed recording processing to regenerate summary
+    const handleRecordingProcessingComplete = () => {
+      console.log('Recording processing complete event received, regenerating summary...');
+      generateSummary(true); // Force regeneration since processing is complete
     };
     
-    window.addEventListener('recordingSaved', handleRecordingSaved);
+    window.addEventListener('recordingProcessingComplete', handleRecordingProcessingComplete);
     
     return () => {
-      window.removeEventListener('recordingSaved', handleRecordingSaved);
+      window.removeEventListener('recordingProcessingComplete', handleRecordingProcessingComplete);
     };
   }, [generateSummary]);
 

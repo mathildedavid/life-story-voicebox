@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 
-export type RecordingState = 'idle' | 'recording' | 'paused' | 'completed';
+export type RecordingState = 'idle' | 'recording' | 'paused' | 'completed' | 'saving' | 'processing' | 'saved' | 'error';
 
 export interface AudioRecording {
   blob: Blob;
@@ -12,6 +12,9 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [elapsedTime, setElapsedTime] = useState(0);
   const [recording, setRecording] = useState<AudioRecording | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isStartingNew, setIsStartingNew] = useState(false);
+  const [processingStep, setProcessingStep] = useState<'saving' | 'transcribing' | 'analyzing'>('saving');
   const { saveRecording } = recordingsHook || {};
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -190,6 +193,27 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
     console.log('Recording reset complete - new state: idle');
   }, [recording, recordingState]);
 
+  const startNewRecording = useCallback(async () => {
+    if (isStartingNew || recordingState === 'saving' || recordingState === 'processing') return; // Prevent double-click and invalid states
+    
+    setIsStartingNew(true);
+    setErrorMessage('');
+    
+    try {
+      // Reset from saved state and start a new recording
+      resetRecording();
+      // Small delay to ensure state is reset before starting
+      await new Promise(resolve => setTimeout(resolve, 150));
+      await startRecording();
+    } catch (error) {
+      console.error('Error starting new recording:', error);
+      setErrorMessage('Failed to start recording. Please check microphone permissions.');
+      setRecordingState('error');
+    } finally {
+      setIsStartingNew(false);
+    }
+  }, [resetRecording, startRecording, isStartingNew, recordingState]);
+
   const saveToDatabase = useCallback(async () => {
     console.log('saveToDatabase called with state:', {
       recordingState,
@@ -199,7 +223,17 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       pauseTime: pauseTimeRef.current
     });
 
-    if (recordingState === 'paused' && mediaRecorderRef.current && chunksRef.current.length > 0) {
+    // Set saving state immediately
+    const currentState = recordingState;
+    setRecordingState('saving');
+    setErrorMessage('');
+    setProcessingStep('saving');
+
+    // Minimum display time for saving state
+    const savingStartTime = Date.now();
+    const minSavingTime = 1000; // 1 second minimum
+
+    if (currentState === 'paused' && mediaRecorderRef.current && chunksRef.current.length > 0) {
       console.log('Processing paused state save...');
       
       // For paused recordings, create the blob directly and save
@@ -215,34 +249,85 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       
       try {
         console.log('Calling saveRecording function...');
-        const result = await saveRecording(blob, finalDuration);
+        
+        // Ensure minimum saving time has passed before transitioning
+        const elapsedSavingTime = Date.now() - savingStartTime;
+        if (elapsedSavingTime < minSavingTime) {
+          await new Promise(resolve => setTimeout(resolve, minSavingTime - elapsedSavingTime));
+        }
+        
+        setRecordingState('processing');
+        const result = await saveRecording(blob, finalDuration, undefined, {
+          onStepChange: (step) => setProcessingStep(step)
+        });
         console.log('saveRecording result:', result);
         
         if (result) {
-          console.log('Save successful, resetting...');
+          console.log('Save successful, setting saved state...');
+          setRecordingState('saved');
           
-          // Add a small delay to ensure MediaRecorder cleanup completes
-          setTimeout(() => {
-            resetRecording();
-            
-            // Notify the LifeStorySummary to regenerate
-            window.dispatchEvent(new CustomEvent('recordingSaved'));
-          }, 100);
+          // Clean up the media recorder and chunks after successful save
+          if (mediaRecorderRef.current) {
+            try {
+              if (mediaRecorderRef.current.state !== 'inactive') {
+                mediaRecorderRef.current.stop();
+              }
+              if (mediaRecorderRef.current.stream) {
+                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+              }
+            } catch (error) {
+              console.log('MediaRecorder cleanup error (expected):', error);
+            }
+            mediaRecorderRef.current = null;
+          }
+          chunksRef.current = [];
+          
+          // Notify the LifeStorySummary to regenerate
+          window.dispatchEvent(new CustomEvent('recordingSaved'));
         } else {
-          console.error('saveRecording returned null/false');
+          setErrorMessage('Failed to save recording. Please try again.');
+          setRecordingState('error');
         }
       } catch (error) {
         console.error('Save failed with error:', error);
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to save recording');
+        setRecordingState('error');
       }
       
     } else if (recording) {
       console.log('Processing completed state save...');
-      const result = await saveRecording(recording.blob, recording.duration);
-      if (result) {
-        resetRecording();
+      
+      try {
+        // Ensure minimum saving time has passed before transitioning
+        const elapsedSavingTime = Date.now() - savingStartTime;
+        if (elapsedSavingTime < minSavingTime) {
+          await new Promise(resolve => setTimeout(resolve, minSavingTime - elapsedSavingTime));
+        }
         
-        // Notify the LifeStorySummary to regenerate
-        window.dispatchEvent(new CustomEvent('recordingSaved'));
+        setRecordingState('processing');
+        const result = await saveRecording(recording.blob, recording.duration, undefined, {
+          onStepChange: (step) => setProcessingStep(step)
+        });
+        
+        if (result) {
+          setRecordingState('saved');
+          
+          // Clean up recording after successful save
+          if (recording?.url) {
+            URL.revokeObjectURL(recording.url);
+          }
+          setRecording(null);
+          
+          // Notify the LifeStorySummary to regenerate
+          window.dispatchEvent(new CustomEvent('recordingSaved'));
+        } else {
+          setErrorMessage('Failed to save recording. Please try again.');
+          setRecordingState('error');
+        }
+      } catch (error) {
+        console.error('Save failed with error:', error);
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to save recording');
+        setRecordingState('error');
       }
     } else {
       console.log('Cannot save - invalid state:', {
@@ -251,8 +336,10 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
         chunksCount: chunksRef.current.length,
         hasRecording: !!recording
       });
+      setErrorMessage('No recording to save. Please record something first.');
+      setRecordingState('error');
     }
-  }, [recordingState, recording, saveRecording, resetRecording]);
+  }, [recordingState, recording, saveRecording]);
 
   const downloadRecording = useCallback(() => {
     if (recording) {
@@ -265,16 +352,25 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
     }
   }, [recording]);
 
+  const clearError = useCallback(() => {
+    setErrorMessage('');
+    setRecordingState('idle');
+  }, []);
+
   return {
     recordingState,
     elapsedTime,
     recording,
+    errorMessage,
+    processingStep,
     startRecording,
     pauseRecording,
     resumeRecording,
     stopRecording,
     resetRecording,
     downloadRecording,
-    saveToDatabase
+    saveToDatabase,
+    startNewRecording,
+    clearError
   };
 };

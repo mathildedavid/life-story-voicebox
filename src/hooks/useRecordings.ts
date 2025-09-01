@@ -21,6 +21,9 @@ export const useRecordings = () => {
     isOpen: boolean;
     message: string;
   }>({ isOpen: false, message: '' });
+  const [processingCallbacks, setProcessingCallbacks] = useState<{
+    onStepChange?: (step: 'transcribing' | 'analyzing') => void;
+  }>({});
 
   const fetchRecordings = async () => {
     try {
@@ -55,7 +58,7 @@ export const useRecordings = () => {
     }
   };
 
-  const saveRecording = async (audioBlob: Blob, duration: number, title?: string) => {
+  const saveRecording = async (audioBlob: Blob, duration: number, title?: string, callbacks?: { onStepChange?: (step: 'transcribing' | 'analyzing') => void }) => {
     console.log('saveRecording function called with:', {
       blobSize: audioBlob.size,
       duration: duration,
@@ -214,14 +217,9 @@ export const useRecordings = () => {
     }
   };
 
-  const transcribeRecording = async (recordingId: string) => {
+  const transcribeRecording = async (recordingId: string, callbacks?: { onStepChange?: (step: 'transcribing' | 'analyzing') => void }) => {
     try {
       console.log('Starting transcription for recording:', recordingId);
-      
-      toast({
-        title: "Processing your story...",
-        description: "Transcribing your recording..."
-      });
       
       const { data, error } = await supabase.functions.invoke('transcribe-audio', {
         body: { recordingId }
@@ -229,11 +227,10 @@ export const useRecordings = () => {
 
       if (error) {
         console.error('Error calling transcription function:', error);
-        toast({
-          title: "Transcription failed",
-          description: "Could not transcribe your recording",
-          variant: "destructive"
-        });
+        // Don't fail the entire flow - just continue without transcript
+        console.log('Transcription failed, continuing without transcript');
+        // Still try to generate encouragement based on audio
+        generateEncouragement(recordingId, callbacks);
         return;
       }
 
@@ -249,26 +246,18 @@ export const useRecordings = () => {
       );
 
       // Now generate encouragement message
-      generateEncouragement(recordingId);
+      generateEncouragement(recordingId, callbacks);
 
     } catch (error) {
       console.error('Error transcribing recording:', error);
-      toast({
-        title: "Processing failed",
-        description: "Could not process your recording",
-        variant: "destructive"
-      });
+      // Don't fail the entire flow - still try encouragement
+      generateEncouragement(recordingId, callbacks);
     }
   };
 
-  const generateEncouragement = async (recordingId: string) => {
+  const generateEncouragement = async (recordingId: string, callbacks?: { onStepChange?: (step: 'transcribing' | 'analyzing') => void }) => {
     try {
       console.log('Generating encouragement for recording:', recordingId);
-      
-      toast({
-        title: "Creating your personal message...",
-        description: "Analyzing your story for insights..."
-      });
       
       const { data, error } = await supabase.functions.invoke('generate-encouragement', {
         body: { recordingId }
@@ -299,8 +288,15 @@ export const useRecordings = () => {
         });
       }
 
+      // After encouragement is generated, trigger life story summary regeneration
+      console.log('Triggering life story summary regeneration after processing complete...');
+      window.dispatchEvent(new CustomEvent('recordingProcessingComplete'));
+
     } catch (error) {
       console.error('Error generating encouragement:', error);
+      // Even if encouragement fails, still trigger summary regeneration
+      console.log('Triggering life story summary regeneration after processing error...');
+      window.dispatchEvent(new CustomEvent('recordingProcessingComplete'));
     }
   };
 
