@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback } from 'react';
-import { toast } from './use-toast';
 
 export type RecordingState = 'idle' | 'recording' | 'paused' | 'completed';
 
@@ -106,19 +105,9 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       console.log('MediaRecorder state:', mediaRecorder.state);
       setRecordingState('recording');
       startTimer();
-      
-      toast({
-        title: "Recording started",
-        description: "Share your life story..."
-      });
 
     } catch (error) {
       console.error('Error starting recording:', error);
-      toast({
-        title: "Recording failed",
-        description: `Could not start recording: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive"
-      });
     }
   }, [startTimer]);
 
@@ -129,11 +118,6 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       stopTimer();
       // Store accumulated time when pausing
       pauseTimeRef.current = (Date.now() - startTimeRef.current) / 1000;
-      
-      toast({
-        title: "Recording paused",
-        description: "Take your time..."
-      });
     }
   }, [recordingState, stopTimer]);
 
@@ -142,11 +126,6 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       mediaRecorderRef.current.resume();
       setRecordingState('recording');
       startTimer();
-      
-      toast({
-        title: "Recording resumed",
-        description: "Continue sharing..."
-      });
     }
   }, [recordingState, startTimer]);
 
@@ -158,11 +137,6 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       
       mediaRecorderRef.current.stop();
       stopTimer();
-      
-      toast({
-        title: "Recording completed",
-        description: "Your story has been saved!"
-      });
     }
   }, [recordingState, stopTimer, elapsedTime]);
 
@@ -253,11 +227,6 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
             
             // Notify the LifeStorySummary to regenerate
             window.dispatchEvent(new CustomEvent('recordingSaved'));
-            
-            toast({
-              title: "Recording saved",
-              description: "Ready to record your next story!"
-            });
           }, 100);
         } else {
           console.error('saveRecording returned null/false');
@@ -274,11 +243,6 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
         
         // Notify the LifeStorySummary to regenerate
         window.dispatchEvent(new CustomEvent('recordingSaved'));
-        
-        toast({
-          title: "Recording saved",
-          description: "Ready to record your next story!"
-        });
       }
     } else {
       console.log('Cannot save - invalid state:', {
@@ -298,11 +262,6 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      toast({
-        title: "Recording downloaded",
-        description: "Your story is saved to your device"
-      });
     }
   }, [recording]);
 

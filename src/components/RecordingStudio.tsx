@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAudioRecording } from '@/hooks/useAudioRecording';
 import { useRecordings } from '@/hooks/useRecordings';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { RecordingsList } from '@/components/RecordingsList';
 import { LifeStorySummary } from '@/components/LifeStorySummary';
-import { EncouragementModal } from '@/components/EncouragementModal';
 import { 
   Play, 
   Pause, 
@@ -16,7 +15,11 @@ import {
   MicOff,
   Volume2,
   Save,
-  RefreshCw
+  RefreshCw,
+  Sparkles,
+  X,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 
 const LIFE_STORY_QUESTIONS = [
@@ -103,6 +106,60 @@ export const RecordingStudio = () => {
   const [currentQuestion, setCurrentQuestion] = useState(() => 
     LIFE_STORY_QUESTIONS[Math.floor(Math.random() * LIFE_STORY_QUESTIONS.length)]
   );
+  const [feedbackMessage, setFeedbackMessage] = useState<{
+    type: 'encouragement' | 'success' | 'error';
+    message: string;
+    visible: boolean;
+  }>({ type: 'success', message: '', visible: false });
+
+  // Show encouragement message when modal would have opened
+  const showEncouragementMessage = (message: string) => {
+    setFeedbackMessage({
+      type: 'encouragement',
+      message,
+      visible: true
+    });
+    // Auto-dismiss after 8 seconds for encouragement
+    setTimeout(() => {
+      setFeedbackMessage(prev => ({ ...prev, visible: false }));
+    }, 8000);
+  };
+
+  const showSuccessMessage = (message: string) => {
+    setFeedbackMessage({
+      type: 'success',
+      message,
+      visible: true
+    });
+    // Auto-dismiss after 3 seconds for success
+    setTimeout(() => {
+      setFeedbackMessage(prev => ({ ...prev, visible: false }));
+    }, 3000);
+  };
+
+  const showErrorMessage = (message: string) => {
+    setFeedbackMessage({
+      type: 'error',
+      message,
+      visible: true
+    });
+    // Auto-dismiss after 5 seconds for errors
+    setTimeout(() => {
+      setFeedbackMessage(prev => ({ ...prev, visible: false }));
+    }, 5000);
+  };
+
+  const dismissFeedback = () => {
+    setFeedbackMessage(prev => ({ ...prev, visible: false }));
+  };
+
+  // Monitor encouragement modal state and show inline instead
+  useEffect(() => {
+    if (recordingsHook.encouragementModal.isOpen && recordingsHook.encouragementModal.message) {
+      showEncouragementMessage(recordingsHook.encouragementModal.message);
+      recordingsHook.closeEncouragementModal();
+    }
+  }, [recordingsHook.encouragementModal.isOpen, recordingsHook.encouragementModal.message]);
 
   const getNewQuestion = () => {
     let newQuestion;
@@ -123,16 +180,41 @@ export const RecordingStudio = () => {
     
     if (recordingState === 'idle') {
       console.log('Starting recording from button click...');
-      startRecording();
+      startRecording().then(() => {
+        showSuccessMessage("Recording started - share your life story!");
+      }).catch((error) => {
+        showErrorMessage(`Could not start recording: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      });
     } else if (recordingState === 'recording') {
       console.log('Pausing recording from button click...');
       pauseRecording();
+      showSuccessMessage("Recording paused - take your time...");
     } else if (recordingState === 'paused') {
       console.log('Resuming recording from button click...');
       resumeRecording();
+      showSuccessMessage("Recording resumed - continue sharing...");
     } else {
       console.log('Unhandled recording state:', recordingState);
     }
+  };
+
+  const handleStop = () => {
+    stopRecording();
+    showSuccessMessage("Recording completed - your story has been captured!");
+  };
+
+  const handleSave = async () => {
+    try {
+      await saveToDatabase();
+      showSuccessMessage("Recording saved successfully - ready for your next story!");
+    } catch (error) {
+      showErrorMessage("Failed to save recording. Please try again.");
+    }
+  };
+
+  const handleDownload = () => {
+    downloadRecording();
+    showSuccessMessage("Recording downloaded to your device!");
   };
 
   const handlePlayback = () => {
@@ -175,6 +257,47 @@ export const RecordingStudio = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-2xl mx-auto">
         <Card className="recording-card text-center animate-fade-in">
+          {/* Inline Feedback Area */}
+          {feedbackMessage.visible && (
+            <div className={`mb-6 p-4 rounded-2xl border animate-fade-in ${
+              feedbackMessage.type === 'encouragement' 
+                ? 'bg-primary/5 border-primary/20 text-primary' 
+                : feedbackMessage.type === 'success'
+                ? 'bg-green-50 border-green-200 text-green-700'
+                : 'bg-red-50 border-red-200 text-red-700'
+            }`}>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5">
+                  {feedbackMessage.type === 'encouragement' && (
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                    </div>
+                  )}
+                  {feedbackMessage.type === 'success' && (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  )}
+                  {feedbackMessage.type === 'error' && (
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                  )}
+                </div>
+                <div className="flex-1 text-left">
+                  {feedbackMessage.type === 'encouragement' && (
+                    <h4 className="font-semibold mb-1">Your Story Shines! ✨</h4>
+                  )}
+                  <p className="text-sm leading-relaxed">
+                    {feedbackMessage.message}
+                  </p>
+                </div>
+                <button
+                  onClick={dismissFeedback}
+                  className="mt-0.5 opacity-60 hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="mb-12">
             <h1 className="text-3xl md:text-4xl font-light mb-4 text-foreground">
@@ -229,7 +352,7 @@ export const RecordingStudio = () => {
           <div className="flex justify-center gap-4 mb-8">
             {recordingState === 'recording' && (
               <Button
-                onClick={stopRecording}
+                onClick={handleStop}
                 variant="secondary"
                 size="lg"
                 className="control-button"
@@ -240,7 +363,7 @@ export const RecordingStudio = () => {
 
             {recordingState === 'paused' && (
               <Button
-                onClick={saveToDatabase}
+                onClick={handleSave}
                 variant="secondary"
                 size="lg"
                 className="control-button bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
@@ -294,12 +417,6 @@ export const RecordingStudio = () => {
           <RecordingsList recordingsHook={recordingsHook} />
         </div>
 
-        {/* Encouragement Modal */}
-        <EncouragementModal
-          isOpen={recordingsHook.encouragementModal.isOpen}
-          onClose={recordingsHook.closeEncouragementModal}
-          message={recordingsHook.encouragementModal.message}
-        />
       </div>
     </div>
   );
