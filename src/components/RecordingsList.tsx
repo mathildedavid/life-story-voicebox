@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Play, Pause, Download, Trash2 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
+import { Play, Pause, Download, Trash2, ChevronDown, ChevronRight, FileText, Loader2 } from 'lucide-react';
 import { useRecordings, type Recording } from '@/hooks/useRecordings';
 
 const formatTime = (seconds: number): string => {
@@ -30,9 +32,11 @@ interface RecordingsListProps {
 
 export const RecordingsList = ({ className, recordingsHook }: RecordingsListProps) => {
   const defaultRecordings = useRecordings();
-  const { recordings, loading, deleteRecording, getRecordingUrl } = recordingsHook || defaultRecordings;
+  const { recordings, loading, deleteRecording, getRecordingUrl, transcribeRecording } = recordingsHook || defaultRecordings;
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Map<string, HTMLAudioElement>>(new Map());
+  const [expandedRecordings, setExpandedRecordings] = useState<Set<string>>(new Set());
+  const [transcribingIds, setTranscribingIds] = useState<Set<string>>(new Set());
 
   const handlePlayPause = async (recording: Recording) => {
     if (playingId === recording.id) {
@@ -91,6 +95,33 @@ export const RecordingsList = ({ className, recordingsHook }: RecordingsListProp
     }
   };
 
+  const toggleExpanded = (recordingId: string) => {
+    setExpandedRecordings(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(recordingId)) {
+        newSet.delete(recordingId);
+      } else {
+        newSet.add(recordingId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleTranscribe = async (recordingId: string) => {
+    if (!transcribeRecording) return;
+    
+    setTranscribingIds(prev => new Set(prev).add(recordingId));
+    try {
+      await transcribeRecording(recordingId);
+    } finally {
+      setTranscribingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(recordingId);
+        return newSet;
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Card className={className}>
@@ -143,53 +174,110 @@ export const RecordingsList = ({ className, recordingsHook }: RecordingsListProp
         <ScrollArea className="h-96">
           <div className="space-y-3">
             {recordings.map((recording) => (
-              <div
-                key={recording.id}
-                className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:shadow-md transition-all duration-300"
-              >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handlePlayPause(recording)}
-                  className="shrink-0"
-                >
-                  {playingId === recording.id ? (
-                    <Pause className="w-4 h-4" />
-                  ) : (
-                    <Play className="w-4 h-4" />
-                  )}
-                </Button>
+              <Collapsible key={recording.id}>
+                <div className="rounded-lg border bg-card hover:shadow-md transition-all duration-300">
+                  <div className="flex items-center gap-4 p-4">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePlayPause(recording)}
+                      className="shrink-0"
+                    >
+                      {playingId === recording.id ? (
+                        <Pause className="w-4 h-4" />
+                      ) : (
+                        <Play className="w-4 h-4" />
+                      )}
+                    </Button>
 
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium truncate">
-                    {recording.title || 'Untitled Recording'}
-                  </h4>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{formatDate(recording.created_at)}</span>
-                    <span>{recording.duration ? formatTime(recording.duration) : 'No duration'}</span>
-                    <span>{recording.file_size ? `${Math.round(recording.file_size / 1024)} KB` : 'No size'}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium truncate">
+                          {recording.title || 'Untitled Recording'}
+                        </h4>
+                        {recording.transcript ? (
+                          <Badge variant="secondary" className="text-xs">
+                            <FileText className="w-3 h-3 mr-1" />
+                            Transcribed
+                          </Badge>
+                        ) : transcribingIds.has(recording.id) ? (
+                          <Badge variant="outline" className="text-xs">
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                            Transcribing...
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            No transcript
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>{formatDate(recording.created_at)}</span>
+                        <span>{recording.duration ? formatTime(recording.duration) : 'No duration'}</span>
+                        <span>{recording.file_size ? `${Math.round(recording.file_size / 1024)} KB` : 'No size'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {recording.transcript && (
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleExpanded(recording.id)}
+                            className="shrink-0"
+                          >
+                            {expandedRecordings.has(recording.id) ? (
+                              <ChevronDown className="w-4 h-4" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </CollapsibleTrigger>
+                      )}
+                      {!recording.transcript && !transcribingIds.has(recording.id) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleTranscribe(recording.id)}
+                          className="shrink-0 text-xs"
+                        >
+                          <FileText className="w-3 h-3 mr-1" />
+                          Transcribe
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDownload(recording)}
+                        className="shrink-0"
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(recording)}
+                        className="shrink-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDownload(recording)}
-                    className="shrink-0"
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(recording)}
-                    className="shrink-0 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  {recording.transcript && (
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="bg-muted/30 rounded-lg p-4 mt-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm font-medium text-muted-foreground">Transcript</span>
+                        </div>
+                        <p className="text-sm leading-relaxed">{recording.transcript}</p>
+                      </div>
+                    </CollapsibleContent>
+                  )}
                 </div>
-              </div>
+              </Collapsible>
             ))}
           </div>
         </ScrollArea>

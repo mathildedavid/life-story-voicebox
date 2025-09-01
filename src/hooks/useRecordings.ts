@@ -8,6 +8,7 @@ export interface Recording {
   duration: number;
   file_path: string;
   file_size: number | null;
+  transcript: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -135,6 +136,11 @@ export const useRecordings = () => {
         console.log('Updating recordings list, adding new recording:', data.id);
         return [data, ...prev];
       });
+
+      // Start transcription in background
+      if (data.id) {
+        transcribeRecording(data.id);
+      }
       
       return data;
     } catch (error) {
@@ -203,6 +209,45 @@ export const useRecordings = () => {
     }
   };
 
+  const transcribeRecording = async (recordingId: string) => {
+    try {
+      console.log('Starting transcription for recording:', recordingId);
+      
+      const { data, error } = await supabase.functions.invoke('transcribe-audio', {
+        body: { recordingId }
+      });
+
+      if (error) {
+        console.error('Error calling transcription function:', error);
+        toast({
+          title: "Transcription failed",
+          description: "Could not transcribe your recording",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Transcription successful:', data);
+      
+      // Update local state with transcript
+      setRecordings(prev => 
+        prev.map(recording => 
+          recording.id === recordingId 
+            ? { ...recording, transcript: data.transcript }
+            : recording
+        )
+      );
+
+      toast({
+        title: "Transcription complete",
+        description: "Your recording has been transcribed"
+      });
+
+    } catch (error) {
+      console.error('Error transcribing recording:', error);
+    }
+  };
+
   useEffect(() => {
     fetchRecordings();
   }, []);
@@ -213,6 +258,7 @@ export const useRecordings = () => {
     saveRecording,
     deleteRecording,
     getRecordingUrl,
+    transcribeRecording,
     refetch: fetchRecordings
   };
 };
