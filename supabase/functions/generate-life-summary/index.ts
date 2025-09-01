@@ -112,6 +112,20 @@ Create a beautiful, inspiring autobiography-style narrative that:
 Do not mention specific recording titles or technical details. Focus on the emotional journey of preserving memories and the significance of their story.`;
 
     console.log('Sending request to OpenAI...');
+    
+    const requestBody = {
+      model: 'gpt-5-2025-08-07',
+      messages: [
+        { 
+          role: 'system', 
+          content: 'You are a skilled memoir writer who creates beautiful, personal autobiographical narratives.' 
+        },
+        { role: 'user', content: prompt }
+      ],
+      max_completion_tokens: 500,
+    };
+    
+    console.log('OpenAI request body:', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -119,22 +133,15 @@ Do not mention specific recording titles or technical details. Focus on the emot
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are a skilled memoir writer who creates beautiful, personal autobiographical narratives.' 
-          },
-          { role: 'user', content: prompt }
-        ],
-        max_completion_tokens: 500,
-      }),
+      body: JSON.stringify(requestBody),
     });
+
+    console.log('OpenAI response status:', response.status);
+    console.log('OpenAI response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
+      console.error('OpenAI API error response:', errorText);
       throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
     }
 
