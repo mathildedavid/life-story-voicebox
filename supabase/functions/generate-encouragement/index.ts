@@ -59,14 +59,12 @@ Someone just recorded a personal story/memory. Here's what they shared:
 
 "${recording.transcript}"
 
-Create a personalized, encouraging message (2-3 sentences max) that:
-1. Acknowledges their courage in sharing something personal
-2. Highlights specific interesting details, themes, or insights from their story
-3. Makes them feel celebrated and valued for their unique perspective
-4. Encourages them to continue sharing their stories
+Create a personalized, encouraging message that:
+1. Highlights specific interesting details, themes, or insights from their story
+2. Makes them feel celebrated and valued for their unique perspective
+3. Acknowledges their courage and encourages them to continue sharing
 
-Be genuine, warm, and specific to their content. Make them feel like their story matters and that they're a natural storyteller. Focus on what makes their perspective unique and valuable.
-
+CRITICAL: Keep your response to EXACTLY 3 lines or fewer. Be concise but impactful.
 Write in a conversational, friendly tone as if you're genuinely moved by their story.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -84,7 +82,7 @@ Write in a conversational, friendly tone as if you're genuinely moved by their s
           },
           { role: 'user', content: prompt }
         ],
-        max_tokens: 200,
+        max_tokens: 100,
         temperature: 0.8,
       }),
     });
