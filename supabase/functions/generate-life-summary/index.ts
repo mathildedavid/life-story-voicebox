@@ -97,7 +97,7 @@ serve(async (req) => {
       : transcriptContent;
 
     // Generate AI summary based on actual transcript content
-    const prompt = `You are creating a warm personal reflection from someone's recorded life stories and memories.
+    const prompt = `You are an editor helping someone organize and clean up their recorded thoughts and memories.
 
 Here are their transcribed recordings:
 
@@ -109,15 +109,17 @@ Statistics:
 - Recording span: ${statistics.recordingSpan} days
 - Started recording: ${new Date(statistics.firstRecording).toLocaleDateString()}
 
-Based on the actual content of their recordings above, create a warm, genuine, and meaningful reflection that:
-1. Captures the key themes, memories, and experiences they've shared
-2. Reflects their personal journey and growth over time
-3. Uses warm, genuine language that feels good to read - be direct and authentic rather than elaborate or flowery
-4. Each paragraph should be concise and get straight to the point while maintaining warmth
-5. Keep it to 2-3 paragraphs maximum
-6. Focus on clear insights and genuine observations rather than elaborate descriptions
+Your task is to edit and organize their actual words into a coherent, well-written summary. Follow these rules strictly:
 
-Write like a caring friend giving honest, encouraging feedback about someone's personal journey - warm and supportive but direct and clear. Focus on the substance of what they've shared and what it reveals about their character and growth.`;
+1. Use ONLY the information provided in the transcripts - do not add, invent, or interpret details that weren't explicitly mentioned
+2. Fix grammar and pronunciation errors from speech-to-text transcription
+3. Combine similar thoughts and remove repetitive phrases
+4. Improve sentence flow while keeping their original meaning and voice
+5. Organize their actual words by themes they mentioned
+6. Keep it to 2-3 paragraphs maximum
+7. If the transcripts are too brief or unclear to create a meaningful summary, simply say so rather than filling gaps with assumptions
+
+Present it as a cleaned-up, organized version of what they actually said - like a good editor would do with their spoken words.`;
 
     console.log('Sending request to OpenAI...');
     
@@ -126,7 +128,7 @@ Write like a caring friend giving honest, encouraging feedback about someone's p
       messages: [
         { 
           role: 'system', 
-          content: 'You are a caring friend who gives warm, encouraging personal reflections. Be genuine and supportive while staying direct and clear.' 
+          content: 'You are a skilled editor who organizes and cleans up spoken content. Stick strictly to the actual content provided - never add or invent details.' 
         },
         { role: 'user', content: prompt }
       ],
