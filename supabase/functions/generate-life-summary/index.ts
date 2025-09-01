@@ -97,7 +97,7 @@ serve(async (req) => {
       : transcriptContent;
 
     // Generate AI summary based on actual transcript content
-    const prompt = `You are a skilled memoir writer creating an autobiography-style summary from someone's recorded life stories and memories.
+    const prompt = `You are creating a warm personal reflection from someone's recorded life stories and memories.
 
 Here are their transcribed recordings:
 
@@ -109,15 +109,15 @@ Statistics:
 - Recording span: ${statistics.recordingSpan} days
 - Started recording: ${new Date(statistics.firstRecording).toLocaleDateString()}
 
-Based on the actual content of their recordings above, create a beautiful, inspiring autobiography-style narrative that:
+Based on the actual content of their recordings above, create a warm, genuine, and meaningful reflection that:
 1. Captures the key themes, memories, and experiences they've shared
 2. Reflects their personal journey and growth over time
-3. Uses warm, personal language as if writing their memoir
-4. Identifies meaningful patterns or recurring themes in their stories
+3. Uses warm, genuine language that feels good to read - be direct and authentic rather than elaborate or flowery
+4. Each paragraph should be concise and get straight to the point while maintaining warmth
 5. Keep it to 2-3 paragraphs maximum
-6. Make it feel deeply personal and meaningful
+6. Focus on clear insights and genuine observations rather than elaborate descriptions
 
-Focus on the substance of what they've shared - their experiences, relationships, insights, and personal growth. Create a narrative that honors their unique story and voice.`;
+Write like a caring friend giving honest, encouraging feedback about someone's personal journey - warm and supportive but direct and clear. Focus on the substance of what they've shared and what it reveals about their character and growth.`;
 
     console.log('Sending request to OpenAI...');
     
@@ -126,7 +126,7 @@ Focus on the substance of what they've shared - their experiences, relationships
       messages: [
         { 
           role: 'system', 
-          content: 'You are a skilled memoir writer who creates beautiful, personal autobiographical narratives.' 
+          content: 'You are a caring friend who gives warm, encouraging personal reflections. Be genuine and supportive while staying direct and clear.' 
         },
         { role: 'user', content: prompt }
       ],
