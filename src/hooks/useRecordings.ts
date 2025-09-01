@@ -17,6 +17,10 @@ export interface Recording {
 export const useRecordings = () => {
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [loading, setLoading] = useState(true);
+  const [encouragementModal, setEncouragementModal] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({ isOpen: false, message: '' });
 
   const fetchRecordings = async () => {
     try {
@@ -287,12 +291,11 @@ export const useRecordings = () => {
         )
       );
 
-      // Show the encouraging message to the user
+      // Show the encouraging message to the user in modal
       if (data.encouragementMessage) {
-        toast({
-          title: "Your story shines! ✨",
-          description: data.encouragementMessage,
-          duration: 8000, // Show for 8 seconds
+        setEncouragementModal({
+          isOpen: true,
+          message: data.encouragementMessage
         });
       }
 
@@ -305,6 +308,10 @@ export const useRecordings = () => {
     fetchRecordings();
   }, []);
 
+  const closeEncouragementModal = () => {
+    setEncouragementModal({ isOpen: false, message: '' });
+  };
+
   return {
     recordings,
     loading,
@@ -313,6 +320,8 @@ export const useRecordings = () => {
     getRecordingUrl,
     transcribeRecording,
     generateEncouragement,
-    refetch: fetchRecordings
+    refetch: fetchRecordings,
+    encouragementModal,
+    closeEncouragementModal
   };
 };

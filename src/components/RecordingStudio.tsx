@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { RecordingsList } from '@/components/RecordingsList';
 import { LifeStorySummary } from '@/components/LifeStorySummary';
+import { EncouragementModal } from '@/components/EncouragementModal';
 import { 
   Play, 
   Pause, 
@@ -274,6 +275,13 @@ export const RecordingStudio = () => {
         <div className="mt-8">
           <RecordingsList recordingsHook={recordingsHook} />
         </div>
+
+        {/* Encouragement Modal */}
+        <EncouragementModal
+          isOpen={recordingsHook.encouragementModal.isOpen}
+          onClose={recordingsHook.closeEncouragementModal}
+          message={recordingsHook.encouragementModal.message}
+        />
       </div>
     </div>
   );
