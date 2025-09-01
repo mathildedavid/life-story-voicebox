@@ -139,7 +139,20 @@ Do not mention specific recording titles or technical details. Focus on the emot
     }
 
     const data = await response.json();
+    console.log('OpenAI response:', JSON.stringify(data));
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response structure:', data);
+      throw new Error('Invalid response from OpenAI');
+    }
+    
     const generatedSummary = data.choices[0].message.content;
+    console.log('Generated summary text:', generatedSummary);
+    
+    if (!generatedSummary || generatedSummary.trim() === '') {
+      console.error('Empty summary received from OpenAI');
+      throw new Error('Empty summary received from OpenAI');
+    }
 
     console.log('Generated summary successfully');
 
