@@ -39,11 +39,12 @@ serve(async (req) => {
 
     console.log('Authenticated user:', user.id);
 
-    // Fetch user's recordings
+    // Fetch user's recordings with transcripts
     const { data: recordings, error: recordingsError } = await supabase
       .from('recordings')
       .select('*')
       .eq('user_id', user.id)
+      .not('transcript', 'is', null) // Only include recordings with transcripts
       .order('created_at', { ascending: true });
 
     if (recordingsError) {
@@ -56,7 +57,7 @@ serve(async (req) => {
 
     if (!recordings || recordings.length === 0) {
       return new Response(JSON.stringify({ 
-        summary: 'Your life story journey begins here. Start recording your memories to create your personal autobiography.',
+        summary: "Your life story journey begins here. Record your memories and let them be transcribed to create your personal autobiography.",
         themes: {},
         statistics: { totalRecordings: 0, totalDuration: 0, recordingSpan: 0 }
       }), {
@@ -64,7 +65,7 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Found ${recordings.length} recordings for user`);
+    console.log(`Found ${recordings.length} recordings with transcripts for user`);
 
     // Calculate statistics
     const totalDuration = recordings.reduce((sum, r) => sum + parseFloat(r.duration), 0);
@@ -82,34 +83,41 @@ serve(async (req) => {
       latestRecording: newestRecording.created_at
     };
 
-    // Prepare recordings summary for AI
-    const recordingsSummary = recordings.map((recording, index) => {
+    // Combine all transcripts with context
+    const transcriptContent = recordings.map((recording, index) => {
       const date = new Date(recording.created_at).toLocaleDateString();
-      const duration = Math.round(parseFloat(recording.duration));
-      return `Recording ${index + 1} (${date}): ${recording.title || 'Untitled'} - ${duration} seconds`;
-    }).join('\n');
+      const title = recording.title || `Recording ${index + 1}`;
+      return `--- ${title} (${date}) ---\n${recording.transcript}`;
+    }).join('\n\n');
 
-    // Generate AI summary
-    const prompt = `You are creating an autobiography-style summary for someone who has been recording their life story. 
+    // Calculate approximate token count and truncate if necessary (rough estimate: 4 chars per token)
+    const maxContentLength = 12000; // Leaving room for prompt and response
+    const finalContent = transcriptContent.length > maxContentLength 
+      ? transcriptContent.substring(0, maxContentLength) + "\n\n[Content truncated due to length...]"
+      : transcriptContent;
 
-Here are their recordings:
-${recordingsSummary}
+    // Generate AI summary based on actual transcript content
+    const prompt = `You are a skilled memoir writer creating an autobiography-style summary from someone's recorded life stories and memories.
+
+Here are their transcribed recordings:
+
+${finalContent}
 
 Statistics:
-- Total recordings: ${statistics.totalRecordings}
+- Total recordings with transcripts: ${statistics.totalRecordings}
 - Total duration: ${Math.floor(statistics.totalDuration / 60)} minutes
 - Recording span: ${statistics.recordingSpan} days
 - Started recording: ${new Date(statistics.firstRecording).toLocaleDateString()}
 
-Create a beautiful, inspiring autobiography-style narrative that:
-1. Acknowledges their journey of self-documentation
-2. Reflects on the time span and dedication shown
-3. Creates anticipation for future recordings
-4. Uses warm, personal language as if writing their memoir
+Based on the actual content of their recordings above, create a beautiful, inspiring autobiography-style narrative that:
+1. Captures the key themes, memories, and experiences they've shared
+2. Reflects their personal journey and growth over time
+3. Uses warm, personal language as if writing their memoir
+4. Identifies meaningful patterns or recurring themes in their stories
 5. Keep it to 2-3 paragraphs maximum
-6. Make it feel meaningful and celebratory
+6. Make it feel deeply personal and meaningful
 
-Do not mention specific recording titles or technical details. Focus on the emotional journey of preserving memories and the significance of their story.`;
+Focus on the substance of what they've shared - their experiences, relationships, insights, and personal growth. Create a narrative that honors their unique story and voice.`;
 
     console.log('Sending request to OpenAI...');
     
