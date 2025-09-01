@@ -114,7 +114,7 @@ Do not mention specific recording titles or technical details. Focus on the emot
     console.log('Sending request to OpenAI...');
     
     const requestBody = {
-      model: 'gpt-5-2025-08-07',
+      model: 'gpt-4',
       messages: [
         { 
           role: 'system', 
@@ -122,7 +122,7 @@ Do not mention specific recording titles or technical details. Focus on the emot
         },
         { role: 'user', content: prompt }
       ],
-      max_completion_tokens: 500,
+      max_tokens: 500,
     };
     
     console.log('OpenAI request body:', JSON.stringify(requestBody, null, 2));
