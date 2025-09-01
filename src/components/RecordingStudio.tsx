@@ -80,6 +80,8 @@ const formatTime = (seconds: number): string => {
 };
 
 export const RecordingStudio = () => {
+  console.log('RecordingStudio component is rendering');
+  
   const recordingsHook = useRecordings();
   const {
     recordingState,
@@ -93,6 +95,9 @@ export const RecordingStudio = () => {
     downloadRecording,
     saveToDatabase
   } = useAudioRecording(recordingsHook);
+
+  console.log('RecordingStudio - recordingState:', recordingState);
+  console.log('RecordingStudio - hooks loaded successfully');
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(() => 
@@ -108,8 +113,13 @@ export const RecordingStudio = () => {
   };
 
   const handleMainButtonClick = () => {
+    console.log('=== BUTTON CLICKED ===');
     console.log('Main button clicked - current state:', recordingState);
-    console.log('Available states:', { recordingState, isIdle: recordingState === 'idle' });
+    console.log('Available functions:', { 
+      startRecording: typeof startRecording, 
+      pauseRecording: typeof pauseRecording,
+      resumeRecording: typeof resumeRecording
+    });
     
     if (recordingState === 'idle') {
       console.log('Starting recording from button click...');
