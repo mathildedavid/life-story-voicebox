@@ -161,6 +161,34 @@ export const RecordingStudio = () => {
     }
   }, [recordingsHook.encouragementModal.isOpen, recordingsHook.encouragementModal.message]);
 
+  // Monitor for successful saves and new recordings to show encouragement
+  useEffect(() => {
+    const handleRecordingSaved = () => {
+      // Check if the latest recording has an encouragement message
+      const latestRecording = recordingsHook.recordings[0];
+      if (latestRecording?.encouragement_message && !feedbackMessage.visible) {
+        showEncouragementMessage(latestRecording.encouragement_message);
+      }
+    };
+
+    window.addEventListener('recordingSaved', handleRecordingSaved);
+    return () => window.removeEventListener('recordingSaved', handleRecordingSaved);
+  }, [recordingsHook.recordings, feedbackMessage.visible]);
+
+  // Reset to idle state when in completed state (cleanup)
+  useEffect(() => {
+    if (recordingState === 'completed') {
+      const timer = setTimeout(() => {
+        if (recordingState === 'completed' && !recording) {
+          // Force reset to idle if we're stuck in completed state
+          console.log('Forcing reset from completed to idle state');
+          resetRecording();
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [recordingState, recording, resetRecording]);
+
   const getNewQuestion = () => {
     let newQuestion;
     do {
@@ -259,17 +287,17 @@ export const RecordingStudio = () => {
         <Card className="recording-card text-center animate-fade-in">
           {/* Inline Feedback Area */}
           {feedbackMessage.visible && (
-            <div className={`mb-6 p-4 rounded-2xl border animate-fade-in ${
+            <div className={`mb-6 p-4 rounded-2xl border animate-fade-in transition-all duration-300 ${
               feedbackMessage.type === 'encouragement' 
-                ? 'bg-primary/5 border-primary/20 text-primary' 
+                ? 'bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20 text-primary' 
                 : feedbackMessage.type === 'success'
-                ? 'bg-green-50 border-green-200 text-green-700'
-                : 'bg-red-50 border-red-200 text-red-700'
+                ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 text-green-700'
+                : 'bg-gradient-to-r from-red-50 to-red-100 border-red-200 text-red-700'
             }`}>
               <div className="flex items-start gap-3">
                 <div className="mt-0.5">
                   {feedbackMessage.type === 'encouragement' && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center animate-pulse">
                       <Sparkles className="w-4 h-4 text-primary" />
                     </div>
                   )}
@@ -282,15 +310,27 @@ export const RecordingStudio = () => {
                 </div>
                 <div className="flex-1 text-left">
                   {feedbackMessage.type === 'encouragement' && (
-                    <h4 className="font-semibold mb-1">Your Story Shines! ✨</h4>
+                    <h4 className="font-semibold mb-2 text-primary">Your Story Shines! ✨</h4>
                   )}
-                  <p className="text-sm leading-relaxed">
+                  {feedbackMessage.type === 'success' && (
+                    <h4 className="font-semibold mb-1 text-green-700">Success!</h4>
+                  )}
+                  {feedbackMessage.type === 'error' && (
+                    <h4 className="font-semibold mb-1 text-red-700">Something went wrong</h4>
+                  )}
+                  <p className="text-sm leading-relaxed opacity-90">
                     {feedbackMessage.message}
                   </p>
+                  {feedbackMessage.type === 'encouragement' && (
+                    <div className="mt-3 pt-2 border-t border-primary/10">
+                      <p className="text-xs text-primary/70">Keep sharing your wonderful memories!</p>
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={dismissFeedback}
-                  className="mt-0.5 opacity-60 hover:opacity-100 transition-opacity"
+                  className="mt-0.5 opacity-60 hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-white/20"
+                  aria-label="Dismiss message"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -326,8 +366,24 @@ export const RecordingStudio = () => {
             
             <p className="text-muted-foreground text-lg">
               {recordingState === 'idle' && "Ready to capture your memories"}
-              {recordingState === 'recording' && "Recording your story..."}
-              {recordingState === 'paused' && "Recording paused"}
+              {recordingState === 'recording' && (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  Recording your story...
+                </span>
+              )}
+              {recordingState === 'paused' && (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  Recording paused
+                </span>
+              )}
+              {recordingState === 'completed' && (
+                <span className="flex items-center justify-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  Recording completed!
+                </span>
+              )}
             </p>
           </div>
 
