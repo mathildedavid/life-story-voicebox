@@ -108,12 +108,20 @@ export const RecordingStudio = () => {
   };
 
   const handleMainButtonClick = () => {
+    console.log('Main button clicked - current state:', recordingState);
+    console.log('Available states:', { recordingState, isIdle: recordingState === 'idle' });
+    
     if (recordingState === 'idle') {
+      console.log('Starting recording from button click...');
       startRecording();
     } else if (recordingState === 'recording') {
+      console.log('Pausing recording from button click...');
       pauseRecording();
     } else if (recordingState === 'paused') {
+      console.log('Resuming recording from button click...');
       resumeRecording();
+    } else {
+      console.log('Unhandled recording state:', recordingState);
     }
   };
 
