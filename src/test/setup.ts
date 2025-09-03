@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -19,8 +20,8 @@ Object.defineProperty(window, 'matchMedia', {
 global.URL.createObjectURL = vi.fn(() => 'mocked-url');
 global.URL.revokeObjectURL = vi.fn();
 
-// Mock MediaRecorder
-global.MediaRecorder = vi.fn().mockImplementation(() => ({
+// Mock MediaRecorder constructor
+const mockMediaRecorderConstructor = vi.fn().mockImplementation(() => ({
   start: vi.fn(),
   stop: vi.fn(),
   pause: vi.fn(),
@@ -38,6 +39,14 @@ global.MediaRecorder = vi.fn().mockImplementation(() => ({
   removeEventListener: vi.fn(),
   dispatchEvent: vi.fn(),
 }));
+
+// Add the static method to the constructor
+Object.defineProperty(mockMediaRecorderConstructor, 'isTypeSupported', {
+  value: vi.fn().mockReturnValue(true),
+  writable: true
+});
+
+global.MediaRecorder = mockMediaRecorderConstructor as any;
 
 // Mock Audio
 global.Audio = vi.fn().mockImplementation(() => ({

@@ -68,7 +68,11 @@ describe('Processing Steps Investigation', () => {
     mockUseRecordings.mockReturnValue({
       recordings: [],
       loading: false,
-      error: null,
+      saveRecording: vi.fn(),
+      deleteRecording: vi.fn(),
+      getRecordingUrl: vi.fn(),
+      transcribeRecording: vi.fn(),
+      generateEncouragement: vi.fn(),
       refetch: vi.fn(),
       encouragementModal: { isOpen: false, message: null },
       closeEncouragementModal: vi.fn(),
@@ -78,7 +82,8 @@ describe('Processing Steps Investigation', () => {
       summary: null,
       loading: false,
       generating: false,
-      generateSummary: vi.fn(),
+      generateSummary: vi.fn() as any,
+      refetch: vi.fn() as any,
     });
   });
 

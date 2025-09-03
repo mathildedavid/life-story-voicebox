@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 
 // Create a simple test component that demonstrates the event flow
@@ -44,7 +45,6 @@ const EventFlowTest = () => {
   );
 };
 
-import React from 'react';
 
 describe('Event Flow Verification', () => {
   let consoleSpy: ReturnType<typeof vi.spyOn>;

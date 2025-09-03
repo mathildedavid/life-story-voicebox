@@ -101,7 +101,11 @@ describe('Save Workflow Integration', () => {
     mockUseRecordings.mockReturnValue({
       recordings: [],
       loading: false,
-      error: null,
+      saveRecording: vi.fn(),
+      deleteRecording: vi.fn(),
+      getRecordingUrl: vi.fn(),
+      transcribeRecording: vi.fn(),
+      generateEncouragement: vi.fn(),
       refetch: mockRefetchRecordings,
       encouragementModal: {
         isOpen: false,
@@ -116,6 +120,7 @@ describe('Save Workflow Integration', () => {
       loading: false,
       generating: false,
       generateSummary: mockGenerateSummary,
+      refetch: vi.fn() as any,
     });
   });
 
@@ -133,7 +138,7 @@ describe('Save Workflow Integration', () => {
     expect(saveButton).toBeInTheDocument();
 
     // Step 2: Click save button and verify saving state
-    let currentRecordingState = 'saving';
+    let currentRecordingState: 'saving' | 'processing' | 'saved' = 'saving';
     mockUseAudioRecording.mockReturnValue({
       recordingState: currentRecordingState,
       elapsedTime: 120,
@@ -206,7 +211,7 @@ describe('Save Workflow Integration', () => {
         startNewRecording: vi.fn(),
         errorMessage: null,
         clearError: vi.fn(),
-        processingStep: 'generating',
+        processingStep: 'transcribing',
       });
 
       // Trigger re-render
@@ -248,13 +253,19 @@ describe('Save Workflow Integration', () => {
             title: 'Test Recording',
             transcript: 'This is a test transcript',
             created_at: '2024-01-01T00:00:00Z',
-            user_id: 'user123',
+            updated_at: '2024-01-01T00:00:00Z',
             duration: 120,
             file_path: 'user123/recording1.webm',
+            file_size: 1024,
+            encouragement_message: mockEncouragementMessage,
           }
         ],
         loading: false,
-        error: null,
+        saveRecording: vi.fn(),
+        deleteRecording: vi.fn(),
+        getRecordingUrl: vi.fn(),
+        transcribeRecording: vi.fn(),
+        generateEncouragement: vi.fn(),
         refetch: mockRefetchRecordings,
         encouragementModal: {
           isOpen: true,
@@ -265,10 +276,16 @@ describe('Save Workflow Integration', () => {
 
       // Update life story summary
       mockUseLifeStorySummary.mockReturnValue({
-        summary: mockLifeStorySummary,
+        summary: {
+          ...mockLifeStorySummary,
+          id: 'summary-1',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z',
+        },
         loading: false,
         generating: false,
         generateSummary: mockGenerateSummary,
+        refetch: vi.fn() as any,
       });
     });
 

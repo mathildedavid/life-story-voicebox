@@ -89,7 +89,11 @@ describe('Save Workflow Simple', () => {
     mockUseRecordings.mockReturnValue({
       recordings: [],
       loading: false,
-      error: null,
+      saveRecording: vi.fn(),
+      deleteRecording: vi.fn(),
+      getRecordingUrl: vi.fn(),
+      transcribeRecording: vi.fn(),
+      generateEncouragement: vi.fn(),
       refetch: mockRefetchRecordings,
       encouragementModal: {
         isOpen: false,
@@ -103,6 +107,7 @@ describe('Save Workflow Simple', () => {
       loading: false,
       generating: false,
       generateSummary: mockGenerateSummary,
+      refetch: vi.fn() as any,
     });
   });
 
@@ -189,7 +194,7 @@ describe('Save Workflow Simple', () => {
       startNewRecording: vi.fn(),
       errorMessage: null,
       clearError: vi.fn(),
-      processingStep: 'generating',
+      processingStep: 'transcribing',
     });
 
     render(
@@ -227,10 +232,16 @@ describe('Save Workflow Simple', () => {
         file_path: 'user123/recording1.webm',
         transcript: 'This is a test transcript',
         created_at: '2024-01-01T00:00:00Z',
-        user_id: 'user123',
+        updated_at: '2024-01-01T00:00:00Z',
+        file_size: 1024,
+        encouragement_message: mockEncouragementMessage,
       }],
       loading: false,
-      error: null,
+      saveRecording: vi.fn(),
+      deleteRecording: vi.fn(),
+      getRecordingUrl: vi.fn(),
+      transcribeRecording: vi.fn(),
+      generateEncouragement: vi.fn(),
       refetch: mockRefetchRecordings,
       encouragementModal: {
         isOpen: true,
@@ -241,10 +252,16 @@ describe('Save Workflow Simple', () => {
 
     // Update life story summary
     mockUseLifeStorySummary.mockReturnValue({
-      summary: mockLifeStorySummary,
+      summary: {
+        ...mockLifeStorySummary,
+        id: 'summary-1',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      },
       loading: false,
       generating: false,
       generateSummary: mockGenerateSummary,
+      refetch: vi.fn() as any,
     });
 
     render(

@@ -102,8 +102,8 @@ export const setupSupabaseMocks = () => {
     error: null,
   });
 
-  // Mock recordings query
-  mockSupabaseClient.from.mockImplementation((table: string) => {
+  // Mock recordings query with proper typing
+  mockSupabaseClient.from = vi.fn().mockImplementation((table: string) => {
     if (table === 'recordings') {
       return {
         select: vi.fn().mockReturnThis(),
