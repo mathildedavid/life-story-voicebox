@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export type RecordingState = 'idle' | 'recording' | 'paused' | 'completed' | 'saving' | 'processing' | 'saved' | 'error';
 
@@ -10,6 +10,11 @@ export interface AudioRecording {
 
 export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./useRecordings').useRecordings>) => {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
+  
+  // Keep ref in sync with state for callbacks
+  useEffect(() => {
+    recordingStateRef.current = recordingState;
+  }, [recordingState]);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [recording, setRecording] = useState<AudioRecording | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -22,6 +27,7 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const pauseTimeRef = useRef<number>(0);
+  const recordingStateRef = useRef<RecordingState>('idle');
 
   const startTimer = useCallback(() => {
     startTimeRef.current = Date.now() - (pauseTimeRef.current * 1000);
@@ -65,17 +71,22 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       chunksRef.current = [];
       
       mediaRecorder.ondataavailable = (event) => {
-        console.log('Data available:', event.data.size, 'bytes');
+        console.log('🎤 Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           chunksRef.current.push(event.data);
-          console.log('Total chunks:', chunksRef.current.length);
+          console.log('📊 Total chunks collected:', chunksRef.current.length);
+        } else {
+          console.warn('⚠️ Empty data chunk received - microphone may not be working');
         }
       };
 
       mediaRecorder.onstop = () => {
-        // Only process onstop if we're not in the middle of a manual save
-        if (recordingState === 'paused') {
-          console.log('MediaRecorder onstop fired during paused save - ignoring');
+        const currentState = recordingStateRef.current;
+        console.log('MediaRecorder onstop fired - current state:', currentState);
+        
+        // Don't override saved state or processing states
+        if (currentState === 'paused' || currentState === 'saved' || currentState === 'processing' || currentState === 'saving') {
+          console.log('MediaRecorder onstop ignored - in protected state:', currentState);
           return;
         }
         
@@ -104,7 +115,7 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
 
       mediaRecorderRef.current = mediaRecorder;
       console.log('Starting MediaRecorder...');
-      mediaRecorder.start(1000); // Collect data every 1 second instead of 100ms
+      mediaRecorder.start(100); // Collect data every 100ms for better capture
       console.log('MediaRecorder state:', mediaRecorder.state);
       setRecordingState('recording');
       startTimer();
@@ -116,11 +127,13 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
 
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current && recordingState === 'recording') {
+      console.log('🛑 Pausing recording - chunks before pause:', chunksRef.current.length);
       mediaRecorderRef.current.pause();
       setRecordingState('paused');
       stopTimer();
       // Store accumulated time when pausing
       pauseTimeRef.current = (Date.now() - startTimeRef.current) / 1000;
+      console.log('⏸️ Recording paused - duration:', pauseTimeRef.current, 'chunks:', chunksRef.current.length);
     }
   }, [recordingState, stopTimer]);
 
@@ -220,8 +233,27 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
       hasMediaRecorder: !!mediaRecorderRef.current,
       chunksCount: chunksRef.current.length,
       hasRecording: !!recording,
-      pauseTime: pauseTimeRef.current
+      pauseTime: pauseTimeRef.current,
+      elapsedTime
     });
+
+    // Validate that we have something to save before proceeding
+    const hasPausedData = recordingState === 'paused' && mediaRecorderRef.current && chunksRef.current.length > 0 && pauseTimeRef.current > 0;
+    const hasCompletedRecording = recording && recording.blob.size > 0;
+    
+    if (!hasPausedData && !hasCompletedRecording) {
+      console.log('Cannot save - no valid recording data:', {
+        recordingState,
+        hasMediaRecorder: !!mediaRecorderRef.current,
+        chunksCount: chunksRef.current.length,
+        hasRecording: !!recording,
+        pauseTime: pauseTimeRef.current,
+        elapsedTime
+      });
+      setErrorMessage('No recording to save. Please record something first.');
+      setRecordingState('error');
+      return;
+    }
 
     // Set saving state immediately
     const currentState = recordingState;
@@ -257,14 +289,18 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
         }
         
         setRecordingState('processing');
+        window.dispatchEvent(new CustomEvent('recordingProcessingStarted'));
         const result = await saveRecording(blob, finalDuration, undefined, {
-          onStepChange: (step) => setProcessingStep(step)
+          onStepChange: (step) => {
+            console.log('Processing step changed to:', step);
+            setProcessingStep(step);
+          }
         });
         console.log('saveRecording result:', result);
         
         if (result) {
-          console.log('Save successful, setting saved state...');
-          setRecordingState('saved');
+          console.log('Save successful, staying in processing state until transcription completes...');
+          // Keep processing state - will be set to 'saved' by the event listener
           
           // Clean up the media recorder and chunks after successful save
           if (mediaRecorderRef.current) {
@@ -305,12 +341,17 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
         }
         
         setRecordingState('processing');
+        window.dispatchEvent(new CustomEvent('recordingProcessingStarted'));
         const result = await saveRecording(recording.blob, recording.duration, undefined, {
-          onStepChange: (step) => setProcessingStep(step)
+          onStepChange: (step) => {
+            console.log('Processing step changed to:', step);
+            setProcessingStep(step);
+          }
         });
         
         if (result) {
-          setRecordingState('saved');
+          // Keep processing state - will be set to 'saved' by the event listener
+          console.log('Save successful for completed recording, staying in processing state until transcription completes...');
           
           // Clean up recording after successful save
           if (recording?.url) {
@@ -329,15 +370,6 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
         setErrorMessage(error instanceof Error ? error.message : 'Failed to save recording');
         setRecordingState('error');
       }
-    } else {
-      console.log('Cannot save - invalid state:', {
-        recordingState,
-        hasMediaRecorder: !!mediaRecorderRef.current,
-        chunksCount: chunksRef.current.length,
-        hasRecording: !!recording
-      });
-      setErrorMessage('No recording to save. Please record something first.');
-      setRecordingState('error');
     }
   }, [recordingState, recording, saveRecording]);
 
@@ -355,6 +387,54 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
   const clearError = useCallback(() => {
     setErrorMessage('');
     setRecordingState('idle');
+  }, []);
+
+  // Listen for processing completion events with timeout fallback
+  useEffect(() => {
+    let processingTimeoutId: NodeJS.Timeout | null = null;
+
+    const handleProcessingComplete = () => {
+      console.log('🎉 Processing complete event received');
+      if (processingTimeoutId) {
+        clearTimeout(processingTimeoutId);
+        processingTimeoutId = null;
+      }
+      setRecordingState(currentState => {
+        console.log('Current recording state in event handler:', currentState);
+        if (currentState === 'processing') {
+          console.log('✅ Setting state to saved - Your Story Shines should appear!');
+          return 'saved';
+        }
+        console.log('⚠️ Not changing state, current state is not processing');
+        return currentState;
+      });
+    };
+
+    const handleProcessingStart = () => {
+      console.log('🔄 Processing started, setting up 30-second timeout fallback');
+      // Fallback timeout in case the event never fires
+      processingTimeoutId = setTimeout(() => {
+        console.log('⏰ Processing timeout reached, forcing completion');
+        setRecordingState(currentState => {
+          if (currentState === 'processing') {
+            console.log('🔧 Timeout: Setting state to saved');
+            return 'saved';
+          }
+          return currentState;
+        });
+      }, 30000); // 30 second timeout
+    };
+
+    window.addEventListener('recordingProcessingComplete', handleProcessingComplete);
+    window.addEventListener('recordingProcessingStarted', handleProcessingStart);
+    
+    return () => {
+      window.removeEventListener('recordingProcessingComplete', handleProcessingComplete);
+      window.removeEventListener('recordingProcessingStarted', handleProcessingStart);
+      if (processingTimeoutId) {
+        clearTimeout(processingTimeoutId);
+      }
+    };
   }, []);
 
   return {

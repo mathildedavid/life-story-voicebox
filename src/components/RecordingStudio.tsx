@@ -111,43 +111,28 @@ export const RecordingStudio = () => {
   const [currentQuestion, setCurrentQuestion] = useState(() => 
     LIFE_STORY_QUESTIONS[Math.floor(Math.random() * LIFE_STORY_QUESTIONS.length)]
   );
-  const [savedEncouragementMessage, setSavedEncouragementMessage] = useState<string>('');
-  const [showEncouragementMessage, setShowEncouragementMessage] = useState(false);
 
   const { generating: generatingSummary } = useLifeStorySummary();
 
 
-  // Monitor for successful saves and capture encouragement message
+  // Log encouragement modal state changes
   useEffect(() => {
-    const handleRecordingSaved = () => {
-      // Check if the latest recording has an encouragement message
-      const latestRecording = recordingsHook.recordings[0];
-      if (latestRecording?.encouragement_message) {
-        setSavedEncouragementMessage(latestRecording.encouragement_message);
-      }
-    };
+    console.log('🎭 Encouragement modal state changed:', {
+      isOpen: recordingsHook.encouragementModal.isOpen,
+      message: recordingsHook.encouragementModal.message,
+      messageLength: recordingsHook.encouragementModal.message?.length || 0,
+      recordingState
+    });
+  }, [recordingsHook.encouragementModal.isOpen, recordingsHook.encouragementModal.message, recordingState]);
 
-    window.addEventListener('recordingSaved', handleRecordingSaved);
-    return () => window.removeEventListener('recordingSaved', handleRecordingSaved);
-  }, [recordingsHook.recordings]);
-
-  // Monitor encouragement modal and capture message
+  // Close encouragement modal when starting a new recording
   useEffect(() => {
-    if (recordingsHook.encouragementModal.isOpen && recordingsHook.encouragementModal.message) {
-      setSavedEncouragementMessage(recordingsHook.encouragementModal.message);
+    if (recordingState === 'recording' && recordingsHook.encouragementModal.isOpen) {
+      console.log('🧹 Closing encouragement modal because new recording started');
       recordingsHook.closeEncouragementModal();
     }
-  }, [recordingsHook.encouragementModal.isOpen, recordingsHook.encouragementModal.message]);
+  }, [recordingState, recordingsHook.encouragementModal.isOpen, recordingsHook.closeEncouragementModal]);
 
-  // Monitor story insight generation and show encouragement message when complete
-  useEffect(() => {
-    if (generatingSummary) {
-      setShowEncouragementMessage(false);
-    } else if (!generatingSummary && savedEncouragementMessage) {
-      // Summary generation just completed, show encouragement message
-      setShowEncouragementMessage(true);
-    }
-  }, [generatingSummary, savedEncouragementMessage]);
 
 
   const getNewQuestion = () => {
@@ -177,8 +162,6 @@ export const RecordingStudio = () => {
     } else if (recordingState === 'saved') {
       console.log('Starting new recording from saved state...');
       startNewRecording();
-      setSavedEncouragementMessage(''); // Clear the encouragement message
-      setShowEncouragementMessage(false); // Clear encouragement message display
     } else {
       console.log('Unhandled recording state:', recordingState);
     }
@@ -189,6 +172,7 @@ export const RecordingStudio = () => {
   };
 
   const handleSave = async () => {
+    console.log('💾 SAVE BUTTON CLICKED - starting save process...');
     await saveToDatabase();
   };
 
@@ -226,7 +210,7 @@ export const RecordingStudio = () => {
   };
 
   const getMainButtonClass = () => {
-    let baseClass = "recording-button flex items-center justify-center text-white transition-all duration-300";
+    const baseClass = "recording-button flex items-center justify-center text-white transition-all duration-300";
     
     if (recordingState === 'recording') {
       return `${baseClass} recording animate-recording-pulse`;
@@ -247,10 +231,10 @@ export const RecordingStudio = () => {
       <div className="w-full max-w-2xl mx-auto">
         <Card className="recording-card text-center animate-fade-in">
           {/* Loading/Success/Error State Area */}
-          {(recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error' || generatingSummary || showEncouragementMessage) && (
+          {(recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error' || (generatingSummary && recordingState !== 'processing')) && (
             <div className={`mb-6 p-6 rounded-2xl border animate-fade-in transition-all duration-500 ${
-              recordingState === 'saved' || showEncouragementMessage
-                ? 'bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20 text-primary' 
+              recordingState === 'saved'
+                ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-blue-700' 
                 : recordingState === 'error'
                 ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-200 text-red-700'
                 : 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-blue-700'
@@ -271,24 +255,10 @@ export const RecordingStudio = () => {
                       </span>
                     </>
                   )}
-                  {generatingSummary && (
+                  {generatingSummary && recordingState !== 'processing' && (
                     <>
                       <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
                       <span className="text-lg font-medium">Generating story insights...</span>
-                    </>
-                  )}
-                  {showEncouragementMessage && savedEncouragementMessage && (
-                    <>
-                      <Sparkles className="w-8 h-8 text-primary" />
-                      <span className="text-lg font-medium">Your Story Shines! ✨</span>
-                      <Button
-                        onClick={() => setShowEncouragementMessage(false)}
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 text-primary/60 hover:text-primary"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
                     </>
                   )}
                   {recordingState === 'error' && (
@@ -304,16 +274,23 @@ export const RecordingStudio = () => {
                   )}
                   {recordingState === 'saved' && (
                     <>
-                      <Sparkles className="w-8 h-8 text-primary" />
-                      <span className="text-lg font-medium">Your Story Shines! ✨</span>
+                      <Sparkles className="w-8 h-8 text-blue-600" />
+                      <span className="text-lg font-medium">
+                        {(() => {
+                          const message = recordingsHook.encouragementModal.message || "Your Story Shines! ✨";
+                          console.log('🎯 RENDERING SUCCESS MESSAGE:', { 
+                            modalMessage: recordingsHook.encouragementModal.message,
+                            modalMessageLength: recordingsHook.encouragementModal.message?.length,
+                            fallback: "Your Story Shines! ✨",
+                            finalMessage: message,
+                            finalMessageLength: message.length
+                          });
+                          return message;
+                        })()}
+                      </span>
                     </>
                   )}
                 </div>
-                {recordingState === 'saved' && (
-                  <div className="mt-2 pt-3 border-t border-primary/10 w-full text-center">
-                    <p className="text-sm text-primary/70">Click record to share another wonderful memory!</p>
-                  </div>
-                )}
                 {recordingState === 'error' && (
                   <div className="mt-4 pt-3 border-t border-red-200 w-full text-center">
                     <Button 
@@ -430,7 +407,7 @@ export const RecordingStudio = () => {
               </Button>
             )}
 
-            {recordingState === 'paused' && (
+            {recordingState === 'paused' && (recording || elapsedTime > 0) && (
               <Button
                 onClick={handleSave}
                 variant="secondary"

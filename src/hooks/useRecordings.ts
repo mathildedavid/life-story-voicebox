@@ -145,9 +145,9 @@ export const useRecordings = () => {
         return [data, ...prev];
       });
 
-      // Start transcription in background
-      if (data.id) {
-        transcribeRecording(data.id);
+      // Start transcription with callbacks and wait for completion
+      if (data.id && callbacks) {
+        await transcribeRecording(data.id, callbacks);
       }
       
       return data;
@@ -221,6 +221,9 @@ export const useRecordings = () => {
     try {
       console.log('Starting transcription for recording:', recordingId);
       
+      // Notify UI that transcription is starting
+      callbacks?.onStepChange?.('transcribing');
+      
       const { data, error } = await supabase.functions.invoke('transcribe-audio', {
         body: { recordingId }
       });
@@ -230,7 +233,7 @@ export const useRecordings = () => {
         // Don't fail the entire flow - just continue without transcript
         console.log('Transcription failed, continuing without transcript');
         // Still try to generate encouragement based on audio
-        generateEncouragement(recordingId, callbacks);
+        await generateEncouragement(recordingId, callbacks);
         return;
       }
 
@@ -246,18 +249,21 @@ export const useRecordings = () => {
       );
 
       // Now generate encouragement message
-      generateEncouragement(recordingId, callbacks);
+      await generateEncouragement(recordingId, callbacks);
 
     } catch (error) {
       console.error('Error transcribing recording:', error);
       // Don't fail the entire flow - still try encouragement
-      generateEncouragement(recordingId, callbacks);
+      await generateEncouragement(recordingId, callbacks);
     }
   };
 
   const generateEncouragement = async (recordingId: string, callbacks?: { onStepChange?: (step: 'transcribing' | 'analyzing') => void }) => {
     try {
       console.log('Generating encouragement for recording:', recordingId);
+      
+      // Notify UI that analysis is starting
+      callbacks?.onStepChange?.('analyzing');
       
       const { data, error } = await supabase.functions.invoke('generate-encouragement', {
         body: { recordingId }
@@ -289,13 +295,27 @@ export const useRecordings = () => {
       }
 
       // After encouragement is generated, trigger life story summary regeneration
-      console.log('Triggering life story summary regeneration after processing complete...');
+      console.log('🎉 DISPATCHING recordingProcessingComplete EVENT - This should trigger Your Story Shines!');
       window.dispatchEvent(new CustomEvent('recordingProcessingComplete'));
 
     } catch (error) {
       console.error('Error generating encouragement:', error);
+      
+      console.log('🔄 ENTERING FALLBACK ENCOURAGEMENT FLOW');
+      
+      // Show a fallback encouraging message when API fails
+      const fallbackMessage = "Thank you for sharing your story! Every memory you record adds to the beautiful tapestry of your life. Keep sharing - your stories matter! ✨";
+      console.log('📝 Setting fallback encouragement modal:', { isOpen: true, message: fallbackMessage });
+      
+      setEncouragementModal({
+        isOpen: true,
+        message: fallbackMessage
+      });
+      
+      console.log('✅ Fallback encouragement modal state set successfully');
+      
       // Even if encouragement fails, still trigger summary regeneration
-      console.log('Triggering life story summary regeneration after processing error...');
+      console.log('🚨 DISPATCHING recordingProcessingComplete EVENT after error - This should still trigger Your Story Shines!');
       window.dispatchEvent(new CustomEvent('recordingProcessingComplete'));
     }
   };

@@ -134,10 +134,40 @@ export const useLifeStorySummary = () => {
   useEffect(() => {
     fetchSummary();
     
-    // Listen for completed recording processing to regenerate summary
-    const handleRecordingProcessingComplete = () => {
-      console.log('Recording processing complete event received, regenerating summary...');
-      generateSummary(true); // Force regeneration since processing is complete
+    // Listen for completed recording processing to silently update summary
+    const handleRecordingProcessingComplete = async () => {
+      console.log('Recording processing complete event received, will update summary after delay...');
+      
+      // Wait a bit to ensure recording state has transitioned to 'saved'
+      setTimeout(async () => {
+        // Don't set generating state for silent background updates
+        
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          console.log('Calling generate-life-summary function silently...');
+          
+          const { data, error } = await supabase.functions.invoke('generate-life-summary', {
+            headers: {
+              Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            },
+          });
+
+          if (error) {
+            console.error('Error generating summary:', error);
+            return;
+          }
+
+          console.log('Summary generated successfully in background:', data);
+          
+          // Silently refetch to get the updated summary from database
+          await fetchSummary();
+        } catch (error) {
+          console.error('Error updating summary in background:', error);
+        }
+        // No finally block needed since we're not setting generating state
+      }, 1000);
     };
     
     window.addEventListener('recordingProcessingComplete', handleRecordingProcessingComplete);
@@ -145,7 +175,7 @@ export const useLifeStorySummary = () => {
     return () => {
       window.removeEventListener('recordingProcessingComplete', handleRecordingProcessingComplete);
     };
-  }, [generateSummary]);
+  }, []);
 
   return {
     summary,
