@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { RecordingsList } from '@/components/RecordingsList';
 import { LifeStorySummary } from '@/components/LifeStorySummary';
 import { useLifeStorySummary } from '@/hooks/useLifeStorySummary';
+import { AccessibilitySettings } from '@/components/AccessibilitySettings';
 import { 
   Play, 
   Pause, 
@@ -20,7 +21,9 @@ import {
   Sparkles,
   X,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  BarChart3,
+  Clock
 } from 'lucide-react';
 
 const LIFE_STORY_QUESTIONS = [
@@ -194,19 +197,19 @@ export const RecordingStudio = () => {
     }
   };
 
-  const getMainButtonIcon = () => {
+  const getMainButtonText = () => {
     if (recordingState === 'idle' || recordingState === 'error') {
-      return <Mic className="w-8 h-8" />;
+      return 'Start';
     } else if (recordingState === 'recording') {
-      return <Pause className="w-8 h-8" />;
+      return 'Pause';
     } else if (recordingState === 'paused') {
-      return <Play className="w-8 h-8" />;
+      return 'Continue';
     } else if (recordingState === 'saved') {
-      return <Mic className="w-8 h-8" />;
+      return 'Start';
     } else if (recordingState === 'saving' || recordingState === 'processing') {
-      return <RefreshCw className="w-8 h-8 animate-spin" />;
+      return 'Processing...';
     }
-    return <Mic className="w-8 h-8" />;
+    return 'Start';
   };
 
   const getMainButtonClass = () => {
@@ -228,8 +231,10 @@ export const RecordingStudio = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl mx-auto">
-        <Card className="recording-card text-center animate-fade-in">
+      <AccessibilitySettings />
+      
+      <div className="w-full max-w-xl mx-auto">
+        <Card className="p-8 bg-card border border-border rounded-3xl text-center animate-fade-in">
           {/* Loading/Success/Error State Area */}
           {(recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error' || (generatingSummary && recordingState !== 'processing')) && (
             <div className={`mb-6 p-6 rounded-2xl border animate-fade-in transition-all duration-500 ${
@@ -244,13 +249,13 @@ export const RecordingStudio = () => {
                   {recordingState === 'saving' && (
                     <>
                       <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
-                      <span className="text-lg font-medium">Saving your recording...</span>
+                      <span className="text-xl-elderly font-medium">Saving your recording...</span>
                     </>
                   )}
                   {recordingState === 'processing' && (
                     <>
                       <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
-                      <span className="text-lg font-medium">
+                      <span className="text-xl-elderly font-medium">
                         {processingStep === 'transcribing' ? 'Transcribing your story...' : 'Generating personalized insights...'}
                       </span>
                     </>
@@ -258,15 +263,15 @@ export const RecordingStudio = () => {
                   {generatingSummary && recordingState !== 'processing' && (
                     <>
                       <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
-                      <span className="text-lg font-medium">Generating story insights...</span>
+                      <span className="text-xl-elderly font-medium">Generating story insights...</span>
                     </>
                   )}
                   {recordingState === 'error' && (
                     <>
                       <AlertCircle className="w-8 h-8 text-red-600" />
                       <div className="text-center">
-                        <h4 className="text-lg font-semibold mb-2 text-red-700">Something went wrong</h4>
-                        <p className="text-sm leading-relaxed opacity-90 max-w-md">
+                        <h4 className="text-xl-elderly font-semibold mb-2 text-red-700">Something went wrong</h4>
+                        <p className="text-lg-elderly leading-relaxed opacity-90 max-w-md">
                           {errorMessage || 'An unexpected error occurred. Please try again.'}
                         </p>
                       </div>
@@ -275,7 +280,7 @@ export const RecordingStudio = () => {
                   {recordingState === 'saved' && (
                     <>
                       <Sparkles className="w-8 h-8 text-blue-600" />
-                      <span className="text-lg font-medium">
+                      <span className="text-xl-elderly font-medium">
                         {(() => {
                           const message = recordingsHook.encouragementModal.message || "Your Story Shines! ✨";
                           console.log('🎯 RENDERING SUCCESS MESSAGE:', { 
@@ -309,7 +314,7 @@ export const RecordingStudio = () => {
 
           {/* Header */}
           <div className="mb-12">
-            <h1 className="text-3xl md:text-4xl font-light mb-4 text-foreground">
+            <h1 className="text-3xl-elderly md:text-4xl font-medium mb-4 text-foreground">
               Life Story Recorder
             </h1>
             
@@ -317,7 +322,7 @@ export const RecordingStudio = () => {
             <div className="mb-6 p-6 bg-muted/20 rounded-2xl">
               <div className="flex items-start gap-4">
                 <div className="flex-1">
-                  <p className="text-foreground text-lg font-medium leading-relaxed">
+                  <p className="text-foreground text-xl-elderly font-medium leading-relaxed">
                     {currentQuestion}
                   </p>
                 </div>
@@ -333,46 +338,47 @@ export const RecordingStudio = () => {
               </div>
             </div>
             
-            <p className="text-muted-foreground text-lg">
-              {recordingState === 'idle' && "Ready to capture your memories"}
-              {recordingState === 'recording' && (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  Recording your story...
-                </span>
-              )}
-              {recordingState === 'paused' && (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  Recording paused
-                </span>
-              )}
-              {recordingState === 'completed' && (
-                <span className="flex items-center justify-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  Recording completed!
-                </span>
-              )}
-              {(recordingState === 'saving' || recordingState === 'processing') && (
-                <span className="flex items-center justify-center gap-2">
-                  <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-                  {recordingState === 'saving' ? 'Saving...' : 
-                   processingStep === 'transcribing' ? 'Transcribing...' : 'Analyzing...'}
-                </span>
-              )}
-              {recordingState === 'saved' && (
-                <span className="flex items-center justify-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  Ready for your next story!
-                </span>
-              )}
-              {recordingState === 'error' && (
-                <span className="flex items-center justify-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600" />
-                  Please try again
-                </span>
-              )}
-            </p>
+            {(recordingState === 'recording' || recordingState === 'paused' || recordingState === 'completed' || recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error') && (
+              <p className="text-muted-foreground text-lg">
+                {recordingState === 'recording' && (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    Recording your story...
+                  </span>
+                )}
+                {recordingState === 'paused' && (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    Recording paused
+                  </span>
+                )}
+                {recordingState === 'completed' && (
+                  <span className="flex items-center justify-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    Recording completed!
+                  </span>
+                )}
+                {(recordingState === 'saving' || recordingState === 'processing') && (
+                  <span className="flex items-center justify-center gap-2">
+                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                    {recordingState === 'saving' ? 'Saving...' : 
+                     processingStep === 'transcribing' ? 'Transcribing...' : 'Analyzing...'}
+                  </span>
+                )}
+                {recordingState === 'saved' && (
+                  <span className="flex items-center justify-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Ready for your next story!
+                  </span>
+                )}
+                {recordingState === 'error' && (
+                  <span className="flex items-center justify-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600" />
+                    Please try again
+                  </span>
+                )}
+              </p>
+            )}
           </div>
 
           {/* Timer Display */}
@@ -383,81 +389,87 @@ export const RecordingStudio = () => {
           </div>
 
           {/* Main Recording Button */}
-          <div className="mb-12 flex justify-center">
-            <button
-              onClick={handleMainButtonClick}
-              className={getMainButtonClass()}
-              disabled={recordingState === 'saving' || recordingState === 'processing'}
-              aria-label={recordingState === 'saving' || recordingState === 'processing' ? 'Processing recording...' : 'Start recording'}
-            >
-              {getMainButtonIcon()}
-            </button>
-          </div>
-
-          {/* Control Buttons */}
-          <div className="flex justify-center gap-4 mb-8">
-            {recordingState === 'recording' && (
+          {recordingState === 'recording' && (
+            <div className="mb-12 flex justify-center gap-4">
               <Button
-                onClick={handleStop}
-                variant="secondary"
+                onClick={handleMainButtonClick}
                 size="lg"
-                className="control-button"
+                className="text-2xl-elderly px-8 py-4 h-auto min-w-32"
               >
-                <Square className="w-5 h-5" />
+                Pause
               </Button>
-            )}
-
-            {recordingState === 'paused' && (recording || elapsedTime > 0) && (
               <Button
                 onClick={handleSave}
                 variant="secondary"
                 size="lg"
-                className="control-button bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
-                disabled={false}
+                className="text-2xl-elderly px-8 py-4 h-auto bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
               >
-                <Save className="w-5 h-5" />
+                Save
               </Button>
-            )}
-          </div>
-
-          {/* Status Indicators */}
-          <div className="flex justify-center items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              {recordingState === 'recording' ? (
-                <Mic className="w-4 h-4 text-primary animate-pulse" />
-              ) : (
-                <MicOff className="w-4 h-4" />
-              )}
-              <span>Microphone</span>
-            </div>
-            
-            {recording && (
-              <div className="flex items-center gap-2">
-                <Volume2 className="w-4 h-4 text-success" />
-                <span>Duration: {formatTime(recording.duration)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Instructions */}
-          {recordingState === 'idle' && (
-            <div className="mt-8 p-6 bg-muted/20 rounded-2xl">
-              <h3 className="text-lg font-medium mb-3 text-foreground">How to get started:</h3>
-              <ul className="text-left text-muted-foreground space-y-2">
-                <li>• Click the red button to start recording</li>
-                <li>• Share your memories, stories, and experiences</li>
-                <li>• Use pause/resume to take breaks</li>
-                <li>• Press stop when you're finished</li>
-                <li>• Save your recording to preserve it permanently</li>
-                <li>• Download recordings to your device anytime</li>
-              </ul>
             </div>
           )}
+          
+          {(recordingState === 'idle' || recordingState === 'error' || recordingState === 'saved' || recordingState === 'saving' || recordingState === 'processing') && (
+            <div className="mb-12 flex justify-center">
+              <Button
+                onClick={handleMainButtonClick}
+                size="lg"
+                disabled={recordingState === 'saving' || recordingState === 'processing'}
+                className="text-2xl-elderly px-8 py-4 h-auto min-w-32"
+                aria-label={recordingState === 'saving' || recordingState === 'processing' ? 'Processing recording...' : 'Start recording'}
+              >
+                {getMainButtonText()}
+              </Button>
+            </div>
+          )}
+
+          {/* Control Buttons */}
+          {recordingState === 'paused' && (recording || elapsedTime > 0) && (
+            <div className="flex justify-center gap-4 mb-8">
+              <Button
+                onClick={resumeRecording}
+                size="lg"
+                className="text-2xl-elderly px-8 py-4 h-auto"
+              >
+                Continue
+              </Button>
+              <Button
+                onClick={handleSave}
+                variant="secondary"
+                size="lg"
+                className="text-2xl-elderly px-8 py-4 h-auto bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                disabled={false}
+              >
+                Save
+              </Button>
+            </div>
+          )}
+
+          {/* Essential Statistics */}
+          <div className="flex justify-center items-center gap-8 text-lg-elderly text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              <span>{recordingsHook.recordings.length} Recording{recordingsHook.recordings.length !== 1 ? 's' : ''}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              <span>{(() => {
+                const totalSeconds = recordingsHook.recordings.reduce((sum, rec) => sum + (rec.duration || 0), 0);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                return hours > 0 ? `${hours}h ${minutes}m Total Time` : `${minutes}m Total Time`;
+              })()}</span>
+            </div>
+          </div>
+
 
         </Card>
 
         {/* Life Story Summary */}
-        <LifeStorySummary />
+        <div className="mt-8">
+          <LifeStorySummary />
+        </div>
 
         {/* Recordings History */}
         <div className="mt-8">

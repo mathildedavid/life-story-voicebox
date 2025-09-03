@@ -18,6 +18,13 @@ export default {
 			}
 		},
 		extend: {
+			fontSize: {
+				'base-elderly': ['20px', { lineHeight: '1.8' }],
+				'lg-elderly': ['24px', { lineHeight: '1.8' }],
+				'xl-elderly': ['28px', { lineHeight: '1.8' }],
+				'2xl-elderly': ['32px', { lineHeight: '1.75' }],
+				'3xl-elderly': ['36px', { lineHeight: '1.7' }],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
