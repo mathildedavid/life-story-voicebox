@@ -236,7 +236,7 @@ export const RecordingStudio = () => {
       <div className="w-full max-w-xl mx-auto">
         <Card className="p-8 bg-card border border-border rounded-3xl text-center animate-fade-in">
           {/* Loading/Success/Error State Area */}
-          {(recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error' || (generatingSummary && recordingState !== 'processing')) && (
+          {(recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error' || generatingSummary) && (
             <div className={`mb-6 p-6 rounded-2xl border animate-fade-in transition-all duration-500 ${
               recordingState === 'saved'
                 ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-blue-700' 
@@ -444,25 +444,6 @@ export const RecordingStudio = () => {
               </Button>
             </div>
           )}
-
-          {/* Essential Statistics */}
-          <div className="flex justify-center items-center gap-8 text-lg-elderly text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              <span>{recordingsHook.recordings.length} Recording{recordingsHook.recordings.length !== 1 ? 's' : ''}</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              <span>{(() => {
-                const totalSeconds = recordingsHook.recordings.reduce((sum, rec) => sum + (rec.duration || 0), 0);
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                return hours > 0 ? `${hours}h ${minutes}m Total Time` : `${minutes}m Total Time`;
-              })()}</span>
-            </div>
-          </div>
-
 
         </Card>
 
