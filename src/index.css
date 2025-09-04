@@ -39,6 +39,19 @@ All colors MUST be HSL.
     --destructive: 15 45% 55%;
     --destructive-foreground: 25 20% 98%;
 
+    /* Encouragement accent - soft gold */
+    --encouragement: 50 60% 75%;
+    --encouragement-foreground: 25 15% 25%;
+    --encouragement-bg: 50 40% 95%;
+
+    /* Success backgrounds */
+    --success-bg: 142 25% 95%;
+    --success-border: 142 30% 85%;
+
+    /* Error backgrounds */
+    --error-bg: 15 25% 95%;
+    --error-border: 15 30% 85%;
+
     /* Warm borders */
     --border: 25 15% 85%;
     --input: 35 25% 92%;
@@ -58,6 +71,9 @@ All colors MUST be HSL.
     --gradient-card: linear-gradient(145deg, hsl(25, 20%, 98%), hsl(35, 25%, 96%));
     --gradient-warm: linear-gradient(135deg, hsl(25, 25%, 95%), hsl(35, 20%, 92%));
     --gradient-success: linear-gradient(135deg, hsl(142, 25%, 95%), hsl(142, 15%, 92%));
+    --gradient-encouragement: linear-gradient(135deg, hsl(50, 40%, 95%), hsl(50, 30%, 90%));
+    --gradient-error: linear-gradient(135deg, hsl(15, 25%, 95%), hsl(15, 15%, 92%));
+    --gradient-cream-wheat: linear-gradient(135deg, hsl(25, 25%, 96%), hsl(35, 25%, 92%));
     --gradient-glow: radial-gradient(circle at 50% 50%, hsl(var(--recording) / 0.3), transparent);
     
     /* Warm shadows */
@@ -113,6 +129,19 @@ All colors MUST be HSL.
     --success-glow: 142 25% 75%;
     --pause: 35 45% 65%;
 
+    /* Dark mode encouragement */
+    --encouragement: 50 50% 70%;
+    --encouragement-foreground: 25 15% 10%;
+    --encouragement-bg: 50 25% 15%;
+
+    /* Dark mode success backgrounds */
+    --success-bg: 142 25% 15%;
+    --success-border: 142 30% 25%;
+
+    /* Dark mode error backgrounds */
+    --error-bg: 15 25% 15%;
+    --error-border: 15 30% 25%;
+
     --sidebar-background: 25 15% 8%;
     --sidebar-foreground: 25 10% 95%;
     --sidebar-primary: 142 45% 55%;
@@ -159,6 +188,19 @@ All colors MUST be HSL.
     --success: 142 70% 30%;
     --success-glow: 142 60% 40%;
     --pause: 35 70% 35%;
+
+    /* High contrast encouragement */
+    --encouragement: 50 80% 60%;
+    --encouragement-foreground: 25 15% 5%;
+    --encouragement-bg: 50 30% 92%;
+
+    /* High contrast success backgrounds */
+    --success-bg: 142 40% 90%;
+    --success-border: 142 50% 75%;
+
+    /* High contrast error backgrounds */
+    --error-bg: 15 40% 90%;
+    --error-border: 15 50% 75%;
   }
 }
 
@@ -204,8 +246,21 @@ All colors MUST be HSL.
   }
   
   .recording-card {
-    @apply bg-gradient-to-br from-card to-card/80 backdrop-blur-xl border border-border
+    @apply bg-[var(--gradient-cream-wheat)] backdrop-blur-xl border border-border
            rounded-3xl p-8 md:p-12 shadow-[var(--shadow-warm)];
+  }
+
+  /* Enhanced state-specific cards */
+  .success-card {
+    @apply bg-[var(--gradient-success)] border-success/20 backdrop-blur-sm;
+  }
+
+  .encouragement-card {
+    @apply bg-[var(--gradient-encouragement)] border-encouragement/30 backdrop-blur-sm;
+  }
+
+  .error-card {
+    @apply bg-[var(--gradient-error)] border-destructive/20 backdrop-blur-sm;
   }
 
   /* Life Story Summary Styles */

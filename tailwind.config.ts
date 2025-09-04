@@ -77,7 +77,11 @@ export default {
                     DEFAULT: 'hsl(var(--success))',
                     glow: 'hsl(var(--success-glow))'
                 },
-                pause: 'hsl(var(--pause))',
+                encouragement: {
+                    DEFAULT: 'hsl(var(--encouragement))',
+                    foreground: 'hsl(var(--encouragement-foreground))',
+                    bg: 'hsl(var(--encouragement-bg))'
+                },
                 warm: {
                     50: 'hsl(25, 25%, 97%)',
                     100: 'hsl(25, 20%, 94%)',

@@ -234,14 +234,14 @@ export const RecordingStudio = () => {
       <AccessibilitySettings />
       
       <div className="w-full max-w-xl mx-auto">
-        <Card className="p-8 bg-card border border-border rounded-3xl text-center animate-fade-in">
+        <Card className="p-8 bg-[var(--gradient-cream-wheat)] border border-border rounded-3xl text-center animate-fade-in shadow-[var(--shadow-warm)]">
           {/* Loading/Success/Error State Area */}
           {(recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error' || generatingSummary) && (
               <div className={`mb-6 p-6 rounded-2xl border animate-fade-in transition-all duration-500 ${
                 recordingState === 'saved'
-                  ? 'bg-gradient-to-r from-success/5 to-success/10 border-success/20 text-success-foreground' 
+                  ? 'bg-gradient-to-r from-encouragement-bg to-encouragement-bg/80 border-encouragement/30 text-encouragement-foreground' 
                   : recordingState === 'error'
-                  ? 'bg-gradient-to-r from-destructive/5 to-destructive/10 border-destructive/20 text-destructive-foreground'
+                  ? 'bg-[var(--gradient-error)] border-destructive/20 text-destructive-foreground'
                   : 'bg-gradient-to-r from-recording/5 to-recording/10 border-recording/20 text-recording-foreground'
               }`}>
               <div className="flex flex-col items-center gap-4">
@@ -279,8 +279,8 @@ export const RecordingStudio = () => {
                   )}
                   {recordingState === 'saved' && (
                     <>
-                      <Sparkles className="w-8 h-8 text-success" />
-                      <span className="text-xl-elderly font-medium">
+                      <Sparkles className="w-8 h-8 text-encouragement" />
+                      <span className="text-xl-elderly font-medium text-encouragement-foreground">
                         {(() => {
                           const message = recordingsHook.encouragementModal.message || "Your Story Shines! ✨";
                           console.log('🎯 RENDERING SUCCESS MESSAGE:', { 
@@ -318,8 +318,8 @@ export const RecordingStudio = () => {
               Life Story Recorder
             </h1>
             
-            {/* Question Section */}
-            <div className="mb-6 p-6 bg-muted/20 rounded-2xl">
+            {/* Question Section with warm gradient */}
+            <div className="mb-6 p-6 bg-[var(--gradient-warm)] rounded-2xl border border-border/50">
               <div className="flex items-start gap-4">
                 <div className="flex-1">
                   <p className="text-foreground text-xl-elderly font-medium leading-relaxed">
