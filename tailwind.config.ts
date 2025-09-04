@@ -69,15 +69,27 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				recording: {
-					DEFAULT: 'hsl(var(--recording))',
-					glow: 'hsl(var(--recording-glow))'
-				},
-				success: {
-					DEFAULT: 'hsl(var(--success))',
-					glow: 'hsl(var(--success-glow))'
-				},
-				pause: 'hsl(var(--pause))'
+                recording: {
+                    DEFAULT: 'hsl(var(--recording))',
+                    glow: 'hsl(var(--recording-glow))'
+                },
+                success: {
+                    DEFAULT: 'hsl(var(--success))',
+                    glow: 'hsl(var(--success-glow))'
+                },
+                pause: 'hsl(var(--pause))',
+                warm: {
+                    50: 'hsl(25, 25%, 97%)',
+                    100: 'hsl(25, 20%, 94%)',
+                    200: 'hsl(25, 15%, 88%)',
+                    300: 'hsl(25, 15%, 80%)',
+                    400: 'hsl(25, 15%, 65%)',
+                    500: 'hsl(25, 15%, 45%)',
+                    600: 'hsl(25, 15%, 35%)',
+                    700: 'hsl(25, 15%, 25%)',
+                    800: 'hsl(25, 15%, 15%)',
+                    900: 'hsl(25, 15%, 8%)',
+                }
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -131,10 +143,20 @@ export default {
 						boxShadow: '0 0 60px hsl(var(--recording-glow) / 0.8)'
 					}
 				},
-				'breathe': {
-					'0%, 100%': { opacity: '1' },
-					'50%': { opacity: '0.7' }
-				}
+                'breathe': {
+                    '0%, 100%': { opacity: '1' },
+                    '50%': { opacity: '0.7' }
+                },
+                'gentle-pulse': {
+                    '0%, 100%': { 
+                        transform: 'scale(1)',
+                        boxShadow: '0 0 30px hsl(var(--recording) / 0.4)'
+                    },
+                    '50%': { 
+                        transform: 'scale(1.02)',
+                        boxShadow: '0 0 50px hsl(var(--recording-glow) / 0.6)'
+                    }
+                }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -142,7 +164,8 @@ export default {
 				'fade-in': 'fade-in 0.3s ease-out',
 				'scale-in': 'scale-in 0.2s ease-out',
 				'recording-pulse': 'recording-pulse 2s ease-in-out infinite',
-				'breathe': 'breathe 3s ease-in-out infinite'
+                'breathe': 'breathe 3s ease-in-out infinite',
+                'gentle-pulse': 'gentle-pulse 2s ease-in-out infinite'
 			}
 		}
 	},

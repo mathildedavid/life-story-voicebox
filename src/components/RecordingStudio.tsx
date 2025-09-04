@@ -237,24 +237,24 @@ export const RecordingStudio = () => {
         <Card className="p-8 bg-card border border-border rounded-3xl text-center animate-fade-in">
           {/* Loading/Success/Error State Area */}
           {(recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error' || generatingSummary) && (
-            <div className={`mb-6 p-6 rounded-2xl border animate-fade-in transition-all duration-500 ${
-              recordingState === 'saved'
-                ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-blue-700' 
-                : recordingState === 'error'
-                ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-200 text-red-700'
-                : 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-blue-700'
-            }`}>
+              <div className={`mb-6 p-6 rounded-2xl border animate-fade-in transition-all duration-500 ${
+                recordingState === 'saved'
+                  ? 'bg-gradient-to-r from-success/5 to-success/10 border-success/20 text-success-foreground' 
+                  : recordingState === 'error'
+                  ? 'bg-gradient-to-r from-destructive/5 to-destructive/10 border-destructive/20 text-destructive-foreground'
+                  : 'bg-gradient-to-r from-recording/5 to-recording/10 border-recording/20 text-recording-foreground'
+              }`}>
               <div className="flex flex-col items-center gap-4">
                 <div className="flex items-center gap-3">
                   {recordingState === 'saving' && (
                     <>
-                      <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
+                      <RefreshCw className="w-8 h-8 animate-spin text-recording" />
                       <span className="text-xl-elderly font-medium">Saving your recording...</span>
                     </>
                   )}
                   {recordingState === 'processing' && (
                     <>
-                      <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
+                      <RefreshCw className="w-8 h-8 animate-spin text-recording" />
                       <span className="text-xl-elderly font-medium">
                         {processingStep === 'transcribing' ? 'Transcribing your story...' : 'Generating personalized insights...'}
                       </span>
@@ -262,15 +262,15 @@ export const RecordingStudio = () => {
                   )}
                   {generatingSummary && recordingState !== 'processing' && (
                     <>
-                      <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
+                      <RefreshCw className="w-8 h-8 animate-spin text-recording" />
                       <span className="text-xl-elderly font-medium">Generating story insights...</span>
                     </>
                   )}
                   {recordingState === 'error' && (
                     <>
-                      <AlertCircle className="w-8 h-8 text-red-600" />
+                      <AlertCircle className="w-8 h-8 text-destructive" />
                       <div className="text-center">
-                        <h4 className="text-xl-elderly font-semibold mb-2 text-red-700">Something went wrong</h4>
+                        <h4 className="text-xl-elderly font-semibold mb-2 text-destructive">Something went wrong</h4>
                         <p className="text-lg-elderly leading-relaxed opacity-90 max-w-md">
                           {errorMessage || 'An unexpected error occurred. Please try again.'}
                         </p>
@@ -279,7 +279,7 @@ export const RecordingStudio = () => {
                   )}
                   {recordingState === 'saved' && (
                     <>
-                      <Sparkles className="w-8 h-8 text-blue-600" />
+                      <Sparkles className="w-8 h-8 text-success" />
                       <span className="text-xl-elderly font-medium">
                         {(() => {
                           const message = recordingsHook.encouragementModal.message || "Your Story Shines! ✨";
@@ -302,7 +302,7 @@ export const RecordingStudio = () => {
                       onClick={clearError}
                       variant="outline"
                       size="sm"
-                      className="text-red-600 border-red-300 hover:bg-red-50"
+                      className="text-destructive border-destructive/30 hover:bg-destructive/10"
                     >
                       Try Again
                     </Button>
@@ -341,41 +341,41 @@ export const RecordingStudio = () => {
             {(recordingState === 'recording' || recordingState === 'paused' || recordingState === 'completed' || recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error') && (
               <p className="text-muted-foreground text-lg">
                 {recordingState === 'recording' && (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                    Recording your story...
-                  </span>
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 bg-recording rounded-full animate-gentle-pulse"></div>
+                      Recording your story...
+                    </span>
                 )}
                 {recordingState === 'paused' && (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    Recording paused
-                  </span>
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 bg-pause rounded-full"></div>
+                      Recording paused
+                    </span>
                 )}
                 {recordingState === 'completed' && (
-                  <span className="flex items-center justify-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Recording completed!
-                  </span>
+                    <span className="flex items-center justify-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-success" />
+                      Recording completed!
+                    </span>
                 )}
                 {(recordingState === 'saving' || recordingState === 'processing') && (
-                  <span className="flex items-center justify-center gap-2">
-                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-                    {recordingState === 'saving' ? 'Saving...' : 
-                     processingStep === 'transcribing' ? 'Transcribing...' : 'Analyzing...'}
-                  </span>
+                    <span className="flex items-center justify-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin text-recording" />
+                      {recordingState === 'saving' ? 'Saving...' : 
+                       processingStep === 'transcribing' ? 'Transcribing...' : 'Analyzing...'}
+                    </span>
                 )}
                 {recordingState === 'saved' && (
-                  <span className="flex items-center justify-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    Ready for your next story!
-                  </span>
+                    <span className="flex items-center justify-center gap-2">
+                      <Sparkles className="w-4 h-4 text-success" />
+                      Ready for your next story!
+                    </span>
                 )}
                 {recordingState === 'error' && (
-                  <span className="flex items-center justify-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-600" />
-                    Please try again
-                  </span>
+                    <span className="flex items-center justify-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-destructive" />
+                      Please try again
+                    </span>
                 )}
               </p>
             )}
@@ -402,7 +402,7 @@ export const RecordingStudio = () => {
                 onClick={handleSave}
                 variant="secondary"
                 size="lg"
-                className="text-2xl-elderly px-8 py-4 h-auto bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                className="text-2xl-elderly px-8 py-4 h-auto bg-success/10 hover:bg-success/20 text-success border-success/30"
               >
                 Save
               </Button>
@@ -437,7 +437,7 @@ export const RecordingStudio = () => {
                 onClick={handleSave}
                 variant="secondary"
                 size="lg"
-                className="text-2xl-elderly px-8 py-4 h-auto bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                className="text-2xl-elderly px-8 py-4 h-auto bg-success/10 hover:bg-success/20 text-success border-success/30"
                 disabled={false}
               >
                 Save

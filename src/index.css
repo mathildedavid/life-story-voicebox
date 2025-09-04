@@ -8,142 +8,157 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 13% 10%;
-    --foreground: 0 0% 96%;
+    /* Warm background colors */
+    --background: 25 15% 96%;
+    --foreground: 25 15% 25%;
 
-    --card: 220 13% 12%;
-    --card-foreground: 0 0% 96%;
+    /* Warm card colors */
+    --card: 25 20% 98%;
+    --card-foreground: 25 15% 25%;
 
-    --popover: 220 13% 12%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 25 20% 98%;
+    --popover-foreground: 25 15% 25%;
 
-    --primary: 1 83% 59%;
-    --primary-foreground: 0 0% 100%;
+    /* Calming green primary */
+    --primary: 142 45% 45%;
+    --primary-foreground: 25 20% 98%;
 
-    --secondary: 220 13% 18%;
-    --secondary-foreground: 0 0% 90%;
+    /* Warm secondary */
+    --secondary: 35 25% 92%;
+    --secondary-foreground: 25 15% 25%;
 
-    --muted: 220 13% 16%;
-    --muted-foreground: 0 0% 65%;
+    /* Warm muted tones */
+    --muted: 35 15% 88%;
+    --muted-foreground: 25 10% 45%;
 
-    --accent: 142 76% 57%;
-    --accent-foreground: 0 0% 100%;
+    /* Soft success green */
+    --accent: 142 40% 50%;
+    --accent-foreground: 25 20% 98%;
 
-    --destructive: 1 83% 59%;
-    --destructive-foreground: 0 0% 100%;
+    /* Muted terracotta instead of red */
+    --destructive: 15 45% 55%;
+    --destructive-foreground: 25 20% 98%;
 
-    --border: 220 13% 22%;
-    --input: 220 13% 18%;
-    --ring: 1 83% 59%;
+    /* Warm borders */
+    --border: 25 15% 85%;
+    --input: 35 25% 92%;
+    --ring: 142 45% 45%;
 
     --radius: 1rem;
 
-    /* Recording specific colors */
-    --recording: 1 83% 59%;
-    --recording-glow: 1 83% 70%;
-    --success: 142 76% 57%;
-    --success-glow: 142 76% 70%;
-    --pause: 45 100% 60%;
+    /* Recording specific colors - calming greens */
+    --recording: 142 45% 45%;
+    --recording-glow: 142 35% 65%;
+    --success: 142 40% 50%;
+    --success-glow: 142 25% 70%;
+    --pause: 35 45% 55%;
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(1, 83%, 59%), hsl(1, 83%, 70%));
-    --gradient-card: linear-gradient(145deg, hsl(220, 13%, 12%), hsl(220, 13%, 14%));
+    /* Warm gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(142, 45%, 45%), hsl(142, 35%, 65%));
+    --gradient-card: linear-gradient(145deg, hsl(25, 20%, 98%), hsl(35, 25%, 96%));
+    --gradient-warm: linear-gradient(135deg, hsl(25, 25%, 95%), hsl(35, 20%, 92%));
+    --gradient-success: linear-gradient(135deg, hsl(142, 25%, 95%), hsl(142, 15%, 92%));
     --gradient-glow: radial-gradient(circle at 50% 50%, hsl(var(--recording) / 0.3), transparent);
     
-    /* Shadows */
+    /* Warm shadows */
     --shadow-recording: 0 0 30px hsl(var(--recording) / 0.4);
-    --shadow-card: 0 10px 30px -10px hsl(220, 13%, 8% / 0.3);
+    --shadow-card: 0 10px 30px -10px hsl(25, 15%, 75% / 0.3);
     --shadow-glow: 0 0 60px hsl(var(--recording-glow) / 0.6);
+    --shadow-warm: 0 4px 20px hsl(25, 20%, 80% / 0.4);
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 25 20% 98%;
+    --sidebar-foreground: 25 15% 25%;
+    --sidebar-primary: 142 45% 45%;
+    --sidebar-primary-foreground: 25 20% 98%;
+    --sidebar-accent: 35 25% 92%;
+    --sidebar-accent-foreground: 25 15% 25%;
+    --sidebar-border: 25 15% 85%;
+    --sidebar-ring: 142 45% 45%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark mode with warmer tones */
+    --background: 25 15% 8%;
+    --foreground: 25 10% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 25 15% 10%;
+    --card-foreground: 25 10% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 25 15% 10%;
+    --popover-foreground: 25 10% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 142 45% 55%;
+    --primary-foreground: 25 15% 10%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 25 15% 15%;
+    --secondary-foreground: 25 10% 85%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 25 15% 12%;
+    --muted-foreground: 25 8% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 142 40% 60%;
+    --accent-foreground: 25 15% 10%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 15 45% 60%;
+    --destructive-foreground: 25 10% 95%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 25 15% 20%;
+    --input: 25 15% 15%;
+    --ring: 142 45% 55%;
+
+    /* Recording colors for dark mode */
+    --recording: 142 45% 55%;
+    --recording-glow: 142 35% 70%;
+    --success: 142 40% 60%;
+    --success-glow: 142 25% 75%;
+    --pause: 35 45% 65%;
+
+    --sidebar-background: 25 15% 8%;
+    --sidebar-foreground: 25 10% 95%;
+    --sidebar-primary: 142 45% 55%;
+    --sidebar-primary-foreground: 25 15% 10%;
+    --sidebar-accent: 25 15% 15%;
+    --sidebar-accent-foreground: 25 10% 85%;
+    --sidebar-border: 25 15% 20%;
+    --sidebar-ring: 142 45% 55%;
   }
 
   .high-contrast {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    /* High contrast with warmer base tones */
+    --background: 25 20% 98%;
+    --foreground: 25 15% 5%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 0%;
+    --card: 25 15% 96%;
+    --card-foreground: 25 15% 5%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover: 25 20% 98%;
+    --popover-foreground: 25 15% 5%;
 
-    --primary: 210 100% 40%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 142 60% 35%;
+    --primary-foreground: 25 20% 98%;
 
-    --secondary: 0 0% 85%;
-    --secondary-foreground: 0 0% 0%;
+    --secondary: 25 10% 85%;
+    --secondary-foreground: 25 15% 5%;
 
-    --muted: 0 0% 92%;
-    --muted-foreground: 0 0% 20%;
+    --muted: 25 10% 90%;
+    --muted-foreground: 25 15% 20%;
 
-    --accent: 120 60% 35%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 142 70% 30%;
+    --accent-foreground: 25 20% 98%;
 
-    --destructive: 0 80% 40%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 15 70% 40%;
+    --destructive-foreground: 25 20% 98%;
 
-    --border: 0 0% 75%;
-    --input: 0 0% 90%;
-    --ring: 210 100% 40%;
+    --border: 25 15% 75%;
+    --input: 25 10% 90%;
+    --ring: 142 60% 35%;
 
-    --recording: 0 80% 40%;
-    --recording-glow: 0 80% 50%;
-    --success: 120 60% 35%;
-    --success-glow: 120 60% 45%;
-    --pause: 45 100% 35%;
+    /* High contrast recording colors */
+    --recording: 142 60% 35%;
+    --recording-glow: 142 50% 45%;
+    --success: 142 70% 30%;
+    --success-glow: 142 60% 40%;
+    --pause: 35 70% 35%;
   }
 }
 
@@ -160,17 +175,17 @@ All colors MUST be HSL.
 /* Recording UI Components */
 @layer components {
   .recording-button {
-    @apply relative w-24 h-24 rounded-full border-2 border-primary bg-primary 
+    @apply relative w-24 h-24 rounded-full border-2 border-recording bg-recording
            transition-all duration-300 ease-out hover:scale-105 active:scale-95
            shadow-[0_0_30px_hsl(var(--recording)/0.4)];
   }
   
   .recording-button.recording {
-    @apply animate-pulse shadow-[0_0_60px_hsl(var(--recording-glow)/0.6)];
+    @apply animate-[breathe_3s_ease-in-out_infinite] shadow-[0_0_60px_hsl(var(--recording-glow)/0.6)];
   }
   
   .recording-button.paused {
-    @apply bg-secondary border-secondary shadow-[0_0_30px_hsl(var(--pause)/0.4)];
+    @apply bg-pause border-pause shadow-[0_0_30px_hsl(var(--pause)/0.4)];
   }
   
   .control-button {
@@ -185,12 +200,12 @@ All colors MUST be HSL.
   }
   
   .timer-display.recording {
-    @apply text-primary animate-pulse;
+    @apply text-recording animate-[breathe_3s_ease-in-out_infinite];
   }
   
   .recording-card {
     @apply bg-gradient-to-br from-card to-card/80 backdrop-blur-xl border border-border
-           rounded-3xl p-8 md:p-12 shadow-2xl;
+           rounded-3xl p-8 md:p-12 shadow-[var(--shadow-warm)];
   }
 
   /* Life Story Summary Styles */
