@@ -239,7 +239,7 @@ export const RecordingStudio = () => {
           {(recordingState === 'saving' || recordingState === 'processing' || recordingState === 'saved' || recordingState === 'error' || generatingSummary) && (
               <div className={`mb-6 p-6 rounded-2xl border animate-fade-in transition-all duration-500 ${
                 recordingState === 'saved'
-                  ? 'bg-gradient-to-r from-encouragement-bg to-encouragement-bg/80 border-encouragement/30 text-encouragement-foreground' 
+                  ? 'bg-encouragement-bg border-encouragement/30' 
                   : recordingState === 'error'
                   ? 'bg-[var(--gradient-error)] border-destructive/20 text-destructive-foreground'
                   : 'bg-gradient-to-r from-recording/5 to-recording/10 border-recording/20 text-recording-foreground'
@@ -280,7 +280,7 @@ export const RecordingStudio = () => {
                   {recordingState === 'saved' && (
                     <>
                       <Sparkles className="w-8 h-8 text-encouragement" />
-                      <span className="text-xl-elderly font-medium text-encouragement-foreground">
+                      <span className="text-xl-elderly font-medium text-encouragement">
                         {(() => {
                           const message = recordingsHook.encouragementModal.message || "Your Story Shines! ✨";
                           console.log('🎯 RENDERING SUCCESS MESSAGE:', { 
