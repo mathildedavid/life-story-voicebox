@@ -29,6 +29,25 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
   const pauseTimeRef = useRef<number>(0);
   const recordingStateRef = useRef<RecordingState>('idle');
 
+  // Reset to clean state on mount to clear any stale error states
+  useEffect(() => {
+    console.log('Resetting recording state to idle on component mount');
+    setRecordingState('idle');
+    setErrorMessage('');
+    
+    // Clear any existing recording state
+    if (mediaRecorderRef.current) {
+      try {
+        if (mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } catch (e) {
+        console.log('Cleanup error on mount (expected):', e);
+      }
+      mediaRecorderRef.current = null;
+    }
+  }, []);
+
   const startTimer = useCallback(() => {
     startTimeRef.current = Date.now() - (pauseTimeRef.current * 1000);
     intervalRef.current = setInterval(() => {
@@ -122,6 +141,8 @@ export const useAudioRecording = (recordingsHook?: ReturnType<typeof import('./u
 
     } catch (error) {
       console.error('Error starting recording:', error);
+      setErrorMessage('Failed to start recording. Please check microphone permissions.');
+      setRecordingState('error');
     }
   }, [startTimer]);
 

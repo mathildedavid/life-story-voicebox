@@ -8,6 +8,26 @@ Transform Life Story Voicebox into a **dignified, accessible platform** that emp
 - **90-year-old grandmother**: WhatsApp user, basic tech comfort, values simplicity
 - **70-year-old father**: More tech-savvy, appreciates efficiency and control
 
+## Critical Bug Fixes & Enhancements
+
+### **Recording System Issues**
+1. **Save Without Pause Bug**: Fix error that occurs when clicking Save button during active recording without pausing first
+   - **Root Cause**: Save function expects recording to be in 'paused' state
+   - **Solution**: Auto-pause recording when Save is clicked, or prevent Save button during active recording
+   - **Priority**: Critical - breaks core functionality
+
+2. **Long Recording Truncation**: Investigate and fix audio truncation in longer recordings
+   - **Issue**: MediaRecorder may be cutting long recordings or losing audio chunks
+   - **Investigation Areas**: Chunk collection logic, blob assembly, MediaRecorder timeslice parameter
+   - **Solution**: Ensure complete audio capture regardless of recording duration
+   - **Priority**: High - affects recording quality
+
+3. **Content Generation Enhancement**: Expand AI-generated content options
+   - **Current**: Basic summary only
+   - **Requested**: Both short summary AND detailed autobiography
+   - **Implementation**: Add toggle or separate sections for different content lengths
+   - **Priority**: Medium - enhances user value
+
 ## Critical Improvements Needed
 
 ### 1. **Visual Accessibility Overhaul**
